@@ -8,6 +8,9 @@ PY=${PYTHON:-$LIB/.venv/bin/python}
 
 [ -f "$LIB/core/render/video.mjs" ] || { echo "Set LIB to the Lemo-Opuscar repository root." >&2; exit 1; }
 cd "$LIB"
+# Prefer a user-local FFmpeg installed in the project venv (for example via imageio-ffmpeg)
+# while still allowing a system FFmpeg to win when one is already configured.
+export PATH="$LIB/.venv/bin:$PATH"
 
 # This step is always useful: it exports the single timeline to cues and captions.
 node "$HERE/export.mjs"

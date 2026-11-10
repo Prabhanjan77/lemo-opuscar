@@ -11,6 +11,8 @@
 ## Blocked final-media checks
 
 - The repository's real Chrome frame renderer could not launch in this sandbox: the available temporary headless binary is missing `libnspr4.so`.
-- FFmpeg is not installed, so no raw MP4 or muxed MP4 could be generated here.
+- FFmpeg is now installed user-locally as FFmpeg 9.0.2 through `imageio-ffmpeg` and is available at `.venv/bin/ffmpeg`.
+- The repository's real Chrome frame renderer remains blocked: the available temporary Chromium binary cannot launch because `libnspr4.so` is unavailable.
+- Because frame rendering is blocked, no raw MP4 or muxed MP4 has been generated yet.
 
-On a machine with Chrome/Chromium and FFmpeg 7+, run `sh films/payment-idempotency/build.sh`. It renders 24 fps 1080 × 1920 review stills at the scene boundaries, runs `readcheck`, and then muxes `mix.wav` to `payment-idempotency.mp4`. Recheck the contact sheet and full-speed playback once that environment is available.
+Once Chrome/Chromium is available, run `sh films/payment-idempotency/build.sh`. It renders 24 fps 1080 × 1920 review stills at the scene boundaries, runs `readcheck`, and then muxes `mix.wav` to `payment-idempotency.mp4`. Recheck the contact sheet and full-speed playback after that render.

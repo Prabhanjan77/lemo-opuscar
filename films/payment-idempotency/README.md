@@ -18,7 +18,9 @@ Open the live preview at `/films/payment-idempotency/index.html?preview=1` and u
 sh films/payment-idempotency/build.sh
 ```
 
-The build always regenerates `events.json`, `captions.srt`, and `mix.wav`. If Chrome/Chromium and FFmpeg 7+ are available, it renders 24 fps frames at `1080x1920`, takes review stills, runs `readcheck`, and muxes `payment-idempotency.mp4` at approximately −14 LUFS. If either tool is missing, it leaves the editable HTML preview and reports the missing step rather than writing a false MP4.
+The build always regenerates `events.json`, `captions.srt`, and `mix.wav`. It prefers a user-local FFmpeg exposed in `.venv/bin` and otherwise uses the system `ffmpeg`. If Chrome/Chromium and FFmpeg 7+ are available, it renders 24 fps frames at `1080x1920`, takes review stills, runs `readcheck`, and muxes `payment-idempotency.mp4` at approximately −14 LUFS. If either tool is missing, it leaves the editable HTML preview and reports the missing step rather than writing a false MP4.
+
+If FFmpeg is not installed system-wide, a Python environment can provide a compatible local binary with `pip install imageio-ffmpeg` followed by a symlink or wrapper at `.venv/bin/ffmpeg`; `build.sh` already searches that directory.
 
 ## Editable source
 
