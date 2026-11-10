@@ -1,187 +1,82 @@
-// Caching from First Principles — 30-second landscape sample.
-// Every frame is a pure function of t; the visual route and audio cues share timeline.js.
+// Caching from First Principles — readable editorial system-design cut.
+// Each scene uses one causal motion: request, bottleneck, miss, hit, trade-off.
 import * as E from './engine.js';
 import { DUR, SCENES, CAPTIONS, sceneAt, captionAt } from './timeline.js';
 
-const { W, H, PAL, clamp, lerp, seg, eo, ei, eio, back, spring, hash, font, TAU } = E;
+const { W, H, PAL, clamp, lerp, seg, eio, back, hash, TAU } = E;
 export { DUR };
 
 function appear(t, a, b, ease = eio) { return ease(seg(t, a, b)); }
 function between(t, a, b) { return clamp(seg(t, a, b)); }
-function pulse(t, at, span = .28) { return Math.max(0, 1 - Math.abs(t - at) / span); }
-function pathPoint(points, p) { return E.polyPoint(points, p); }
-function routeDot(g, points, p, color = PAL.violet, alpha = 1) { if (p <= 0 || p >= 1) return; E.movingDot(g, pathPoint(points, eio(p)), { color, r: 8, alpha }); }
-function routePacket(g, points, p, textValue, color, t, alpha = 1) { if (p <= .03 || p >= 1.02) return; E.drawPacket(g, ...pathPoint(points, eio(p)), textValue, { color, scale: .86, pulse: t, alpha }); }
-function drawPath(g, points, color, width = 5, alpha = 1, dash = null) {
-  if (points.length === 4) E.bezier(g, points[0], points[1], points[2], points[3], { color, width, alpha, dash, glowWidth: width > 5 ? 13 : 0 });
-  else E.line(g, points, { color, width, alpha, dash, glowWidth: width > 5 ? 13 : 0 });
+function point(points, p) { return E.polyPoint(points, p); }
+function route(g, points, color, width = 3, alpha = 1, dash = null) { if (points.length === 4) E.bezier(g, points[0], points[1], points[2], points[3], { color, width, alpha, dash }); else E.line(g, points, { color, width, alpha, dash }); }
+function dotRoute(g, points, p, color, alpha = 1, text = null, t = 0) { if (p <= 0) return; const q = point(points, Math.min(1, p)); E.movingDot(g, q, { color, r: text ? 8 : 6, alpha }); if (text && p < 1.04) E.drawPacket(g, q[0], q[1], text, { color, alpha, scale: .9 }); }
+function header(g, scene, number) { E.label(g, `CACHING / FROM FIRST PRINCIPLES  ·  SAMPLE  ·  ${String(number).padStart(2, '0')}`, 72, 52, { size: 14, color: PAL.dim, tracking: 2 }); E.label(g, `${scene.t0.toFixed(2)} — ${scene.t1.toFixed(2)} s`, W - 72, 52, { size: 13, color: PAL.dim, align: 'right', tracking: 1.2 }); }
+function titleBlock(g, headline, kicker, o = {}) { const { dark = false, alpha = 1 } = o; const ink = dark ? PAL.white : PAL.ink; const dim = dark ? '#B8B7BF' : PAL.dim; E.title(g, headline, 72, 157, { size: 78, color: ink, alpha }); E.label(g, kicker, 76, 194, { size: 15, color: dim, tracking: 1.6, alpha }); }
+function base(g, dark = false) { E.bg(g, { dark: false, gridAlpha: .16 }); E.line(g, [[72, 1012], [1848, 1012]], { color: PAL.line, width: 1, alpha: .42 }); }
+function stationLabel(g, x, y, title, sub, color = PAL.dim, alpha = 1) { E.label(g, title, x, y, { size: 14, color, family: 'mono', weight: 700, tracking: 1.2, alpha }); E.label(g, sub, x, y + 23, { size: 12, color: PAL.dim, family: 'mono', tracking: .7, alpha }); }
+function drawDots(g, t, count, start, duration, source, target, color, radius = 5, alpha = 1) {
+  for (let i = 0; i < count; i++) { const st = start + hash(i * 13.7 + 2.4) * .95; if (t < st) continue; const p = clamp((t - st) / duration); const wobble = (hash(i * 4.3) - .5) * 32; const a = [source[0] + wobble, source[1] + (hash(i * 9.1) - .5) * 260]; const b = [target[0], target[1] + wobble * .15]; const q = E.lerpPoint(a, b, eio(p)); E.movingDot(g, q, { color, r: radius * (p < 1 ? 1.25 : 1), alpha: alpha * (p < 1 ? .9 : .42) }); }
 }
-function header(g, scene, number, p = 1) {
-  E.label(g, `CACHING FROM FIRST PRINCIPLES  /  SAMPLE  /  ${String(number).padStart(2, '0')}`, 72, 54, { size: 15, color: PAL.dim, tracking: 2, alpha: p });
-  E.title(g, scene.title, 72, 96, { size: 34, color: PAL.white, weight: 700, alpha: p });
-  E.label(g, scene.kicker, 74, 122, { size: 14, color: PAL.dim, tracking: 1.4, alpha: p });
-}
-function base(g, opts = {}) { E.bg(g, opts); }
-function floor(g, y = 760, alpha = .55) {
-  g.save(); g.globalAlpha *= alpha; g.strokeStyle = 'rgba(238,241,247,.11)'; g.lineWidth = 1;
-  for (let i = -8; i <= 8; i++) { const x = W / 2 + i * 120; g.beginPath(); g.moveTo(x, y); g.lineTo(W / 2 + i * 310, H); g.stroke(); }
-  for (let j = 0; j < 6; j++) { const yy = y + j * j * 10 + j * 28; g.beginPath(); g.moveTo(80, yy); g.lineTo(W - 80, yy); g.stroke(); }
-  g.restore();
-}
-function stationLine(g, a, b, color, p = 1, label = null) {
-  E.line(g, [a, b], { color, width: 4, alpha: .22 + .78 * p, dash: p < 1 ? [12, 10] : null, glowWidth: p > .5 ? 9 : 0 });
-  if (label) E.label(g, label, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 14, { size: 13, color, family: 'mono', align: 'center', tracking: 1.1, alpha: p });
-}
-function drawPool(g, x, y, fill, alpha = 1) {
-  E.panel(g, x, y, 310, 132, { fill: 'rgba(11,15,24,.82)', stroke: 'rgba(238,241,247,.14)', r: 16, shadow: .3, alpha });
-  E.label(g, 'CONNECTION POOL', x + 24, y + 31, { size: 14, color: PAL.dim, tracking: 1.5, alpha });
-  for (let i = 0; i < 8; i++) E.panel(g, x + 24 + i * 33, y + 55, 24, 42, { fill: i < Math.round(fill * 8) ? E.rgba(PAL.red, .34) : E.rgba(PAL.white, .06), stroke: i < Math.round(fill * 8) ? E.rgba(PAL.red, .82) : E.rgba(PAL.white, .12), r: 6, shadow: 0, alpha });
-  E.label(g, `${Math.round(fill * 8)}/8 BUSY`, x + 286, y + 86, { size: 13, color: fill > .8 ? PAL.red : PAL.dim, family: 'mono', weight: 700, align: 'right', tracking: 1, alpha });
-}
-function drawLatencyBreakdown(g, x, y, alpha = 1) {
-  E.panel(g, x, y, 420, 184, { fill: 'rgba(12,17,27,.86)', stroke: 'rgba(238,241,247,.14)', r: 18, shadow: .38, alpha });
-  E.label(g, 'DATABASE PATH / BACK-OF-ENVELOPE', x + 24, y + 30, { size: 13, color: PAL.dim, tracking: 1.4, alpha });
-  const rows = [['APP → DB', '0.5 ms'], ['CONTROLLER LOOKUP', '1.5 ms'], ['PHYSICAL READ', '1.5 ms'], ['DB → APP', '0.5 ms']];
-  rows.forEach((r, i) => { const yy = y + 65 + i * 25; E.label(g, r[0], x + 24, yy, { size: 12, color: PAL.dim, family: 'mono', tracking: .7, alpha }); E.label(g, r[1], x + 390, yy, { size: 12, color: PAL.red, family: 'mono', weight: 700, align: 'right', tracking: 1, alpha }); });
-  E.label(g, '≈ 4 ms TOTAL', x + 24, y + 165, { size: 18, color: PAL.red, family: 'mono', weight: 700, tracking: 1.2, alpha });
-}
-function drawFastBreakdown(g, x, y, alpha = 1) {
-  E.panel(g, x, y, 330, 116, { fill: E.rgba(PAL.green, .08), stroke: E.rgba(PAL.green, .54), r: 18, shadow: .25, alpha });
-  E.label(g, 'CACHE PATH', x + 22, y + 30, { size: 13, color: PAL.dim, tracking: 1.4, alpha });
-  E.label(g, 'APP → MEMORY', x + 22, y + 65, { size: 17, color: PAL.green, family: 'mono', weight: 700, tracking: 1, alpha });
-  E.label(g, '≈ 1.1 ms', x + 305, y + 65, { size: 17, color: PAL.green, family: 'mono', weight: 700, align: 'right', tracking: 1, alpha });
-}
+function drawRequestRuler(g, t, alpha = 1) { const p = appear(t, 9.35, 10.0); E.panel(g, 72, 720, 990, 128, { fill: PAL.white, stroke: PAL.line, r: 12, shadow: .07, alpha: p }); E.label(g, 'WHERE THE ~4 ms GOES', 102, 754, { size: 13, color: PAL.dim, tracking: 1.5, alpha: p }); E.drawRuler(g, 120, 800, 875, [{ value: .5, label: 'APP → DB 0.5', color: PAL.blue }, { value: 1.5, label: 'CONTROLLER 1.5', color: PAL.red }, { value: 1.5, label: 'PHYSICAL READ 1.5', color: PAL.red }, { value: .5, label: 'DB → APP 0.5', color: PAL.blue }], { alpha: p }); }
+function drawStageNote(g, x, y, text, color, alpha = 1) { E.panel(g, x, y, 260, 42, { fill: color === PAL.red ? PAL.redSoft : color === PAL.green ? PAL.greenSoft : PAL.violetSoft, stroke: color, r: 21, shadow: 0, alpha }); E.label(g, text, x + 130, y + 26, { size: 12, color, family: 'mono', weight: 700, align: 'center', tracking: .9, alpha }); }
 
-function drawUserCard(g, x, y, s = 1, textValue = 'USER 01', alpha = 1, click = 0) {
-  const w = 214 * s, h = 72 * s; E.panel(g, x, y, w, h, { fill: 'rgba(12,17,28,.88)', stroke: E.rgba(PAL.white, .17), r: 16 * s, shadow: .28, alpha });
-  g.save(); g.globalAlpha *= alpha; g.fillStyle = E.rgba(PAL.violet, .34); g.beginPath(); g.arc(x + 33 * s, y + 36 * s, 18 * s, 0, TAU); g.fill(); g.fillStyle = E.rgba(PAL.cyan, .30); g.beginPath(); g.arc(x + 33 * s, y + 31 * s, 7 * s, 0, TAU); g.fill(); g.fillStyle = E.rgba(PAL.cyan, .22); g.beginPath(); g.arc(x + 33 * s, y + 48 * s, 12 * s, Math.PI, TAU); g.fill(); g.restore();
-  E.label(g, textValue, x + 63 * s, y + 32 * s, { size: 12 * s, color: PAL.white, family: 'mono', weight: 700, tracking: 1, alpha }); E.label(g, 'GET /profile', x + 63 * s, y + 51 * s, { size: 11 * s, color: PAL.dim, family: 'mono', tracking: .7, alpha });
-  if (click > 0) { g.save(); g.globalAlpha *= alpha * click; g.strokeStyle = PAL.green; g.lineWidth = 2 * s; g.beginPath(); g.arc(x + 33 * s, y + 36 * s, 28 * s * click, 0, TAU); g.stroke(); g.restore(); }
-}
-
-function hook(g, t) {
-  const s = SCENES[0]; base(g, { lift: 1.08, cool: .8, grid: .92 }); header(g, s, 1);
-  const reveal = appear(t, .18, 1.45, back); E.drawNoiseGlyphs(g, 1210, 150, 560, 100, reveal, PAL.violet);
-  E.drawNumber(g, '50,000', 1210, 292, { size: 144, color: PAL.white, scramble: 1 - reveal, accent: PAL.violet });
-  E.label(g, 'PEOPLE · SAME CELEBRITY PROFILE', 1218, 326, { size: 15, color: PAL.violet, family: 'mono', tracking: 1.6, alpha: reveal });
-  const profileP = appear(t, .48, 1.35, back); const profileX = 760, profileY = 325;
-  E.drawProfileWindow(g, profileX, profileY, .86, { alpha: profileP, refresh: t > 2.0 ? .15 + between(t, 2.0, 2.5) : 0 });
-  E.label(g, 'ONE SHARED READ TARGET', profileX + 215, profileY + 330, { size: 13, color: PAL.dim, family: 'mono', align: 'center', tracking: 1.2, alpha: profileP });
-  const oneP = appear(t, .95, 1.55, back); drawUserCard(g, 96, 420, .92, 'USER 01', oneP, pulse(t, 1.62, .28));
-  const oneRoute = [[294, 455], [420, 380], [610, 390], [750, 450]]; drawPath(g, oneRoute, PAL.violet, 5, oneP); const oneQ = between(t, 1.55, 2.25); routeDot(g, oneRoute, oneQ, PAL.violet, oneP); routePacket(g, oneRoute, oneQ, 'GET', PAL.violet, t, oneP);
-  const cursorP = appear(t, 1.22, 1.62, back); E.drawCursor(g, 238, 442, .54, { alpha: cursorP, click: pulse(t, 1.62, .28) });
-  E.pill(g, 94, 520, 270, 34, 'ONE CLICK → ONE REQUEST', { color: PAL.green, stroke: E.rgba(PAL.green, .55), fill: E.rgba(PAL.green, .10), size: 12, mono: true, alpha: oneP });
-  const positions = [[88, 600], [330, 600], [88, 700], [330, 700], [88, 800], [330, 800]];
-  const swarmP = between(t, 2.35, 4.55);
-  positions.forEach((pos, i) => { const a = appear(t, 2.35 + i * .16, 2.72 + i * .16, back); drawUserCard(g, pos[0], pos[1], .76, `USER ${String(i + 2).padStart(2, '0')}`, a, pulse(t, 2.72 + i * .16, .22)); const endY = profileY + 92 + (i % 3) * 34; const route = [[pos[0] + 162, pos[1] + 27], [500, pos[1] + 35], [620, endY], [750, endY]]; drawPath(g, route, PAL.violet, 3, a * .72); const qp = between(t, 2.78 + i * .16, 4.55); routeDot(g, route, qp, PAL.violet, a); });
-  if (swarmP > .15) { E.label(g, 'GET /PROFILE × MANY CLIENTS', 430, 292, { size: 13, color: PAL.violet, family: 'mono', weight: 700, tracking: 1.1, alpha: swarmP }); const targetPulse = .5 + .5 * Math.sin(t * 12); g.save(); g.globalAlpha = swarmP; g.strokeStyle = PAL.violet; g.lineWidth = 3; g.beginPath(); g.arc(profileX + 55, profileY + 165, 62 + targetPulse * 10, 0, TAU); g.stroke(); g.restore(); }
-  E.panel(g, 1210, 408, 566, 190, { fill: 'rgba(10,14,23,.70)', stroke: 'rgba(238,241,247,.14)', r: 22, shadow: .40, accent: PAL.violet, alpha: appear(t, 2.4, 3.0) });
-  E.label(g, 'ALL REQUESTS CONVERGE', 1250, 454, { size: 14, color: PAL.dim, tracking: 1.8 }); E.title(g, 'Same profile.', 1250, 510, { size: 45, color: PAL.white }); E.label(g, 'ONE HOT READ TARGET · MANY CLIENTS', 1252, 552, { size: 14, color: PAL.violet, family: 'mono', tracking: 1.2 });
-  E.drawLightSweep(g, between(t, 5.35, 5.95), PAL.violet, .12);
+function opening(g, t) {
+  const s = SCENES[0]; base(g); header(g, s, 1); titleBlock(g, 'One click, one request', 'GET /PROFILE  ·  START WITH ONE CLIENT');
+  const browserP = appear(t, .25, 1.05, back), apiP = appear(t, .60, 1.30, back), dbP = appear(t, .92, 1.62, back);
+  E.drawBrowser(g, 350, 525, .82, { alpha: browserP, click: between(t, 1.05, 1.48) }); E.drawCube(g, 870, 520, .94, { name: 'API', sub: ':5000', accent: PAL.violet, alpha: apiP }); E.drawCube(g, 1320, 420, .94, { name: 'DATABASE', sub: 'PROFILE ROW', accent: PAL.blue, alpha: dbP });
+  const r1 = [[515, 480], [640, 410], [760, 455], [820, 492]], r2 = [[950, 470], [1040, 380], [1190, 370], [1260, 388]]; route(g, r1, PAL.violet, 4, .34 + .66 * apiP); route(g, r2, PAL.blue, 4, .30 + .70 * dbP);
+  const q1 = between(t, 1.28, 2.35), q2 = between(t, 2.25, 3.35); dotRoute(g, r1, q1, PAL.violet, browserP, 'GET', t); dotRoute(g, r2, q2, PAL.blue, dbP, 'READ', t);
+  E.drawCursor(g, 415, 520, .72, { alpha: appear(t, .95, 1.2), click: between(t, 1.08, 1.48) }); drawStageNote(g, 210, 690, 'ONE CLICK → ONE REQUEST', PAL.green, appear(t, 1.2, 1.8));
+  const scaleP = appear(t, 2.55, 3.25, back); E.title(g, '50,000', 1210, 205, { size: 108, color: PAL.ink, alpha: scaleP }); E.label(g, 'REQUESTS · SAME PROFILE', 1220, 237, { size: 15, color: PAL.red, tracking: 1.5, alpha: scaleP });
+  drawDots(g, t, 38, 2.60, 1.35, [420, 520], [805, 490], PAL.red, 4.5, scaleP); E.label(g, 'MANY CLIENTS', 520, 330, { size: 14, color: PAL.red, family: 'mono', tracking: 1.2, alpha: between(t, 3.1, 3.8) }); E.label(g, 'ONE SHARED READ TARGET', 930, 620, { size: 13, color: PAL.violet, family: 'mono', tracking: 1.1, alpha: between(t, 3.2, 4.4) });
+  E.panel(g, 1210, 300, 570, 190, { fill: PAL.white, stroke: PAL.ink, r: 14, shadow: .12, alpha: appear(t, 3.45, 4.0) }); E.label(g, 'THE QUESTION IS IDENTICAL', 1245, 345, { size: 13, color: PAL.dim, tracking: 1.4 }); E.title(g, 'Same profile.', 1245, 412, { size: 47, color: PAL.ink }); E.label(g, 'THE WORK WILL REPEAT', 1247, 453, { size: 14, color: PAL.red, family: 'mono', tracking: 1.2 });
 }
 
 function bottleneck(g, t) {
-  const s = SCENES[1]; base(g, { lift: .78, cool: .6, grid: .62 }); header(g, s, 2); floor(g, 720, .52);
-  const cam = lerp(90, -150, eio(between(t, 6.0, 11.5)));
-  const appX = 315 + cam, dbX = 895 + cam, diskX = 1490 + cam, sy = 538;
-  stationLine(g, [appX + 105, sy + 12], [dbX - 104, sy + 4], PAL.violet, .95, 'REQUESTS'); stationLine(g, [dbX + 104, sy + 12], [diskX - 124, sy + 2], PAL.red, between(t, 7.6, 8.8), 'READ PRESSURE');
-  E.drawApplication(g, appX, sy, .92, { busy: between(t, 7.0, 10.9) }); E.drawDatabase(g, dbX, sy - 62, 1.02, { state: between(t, 7.6, 9.6) > .4 ? 'POOL FULL' : 'READ', row: between(t, 8.0, 9.8), miss: between(t, 7.8, 10.3) }); E.drawDisk(g, diskX, sy + 12, .9, { read: between(t, 8.6, 10.9) });
-  const p = [[appX + 120, sy - 8], [appX + 280, sy - 130], [dbX - 180, sy - 160], [dbX - 106, sy - 78]]; const q = between(t, 6.9, 8.4); drawPath(g, p, PAL.violet, 5, .74); routeDot(g, p, q, PAL.violet); routePacket(g, p, q, 'REQ ×n', PAL.violet, t);
-  const p2 = [[dbX + 105, sy - 50], [dbX + 260, sy - 165], [diskX - 240, sy - 140], [diskX - 125, sy - 12]]; const q2 = between(t, 8.2, 10.0); drawPath(g, p2, PAL.red, 5, .7); routeDot(g, p2, q2, PAL.red); routePacket(g, p2, q2, 'READ', PAL.red, t + 1);
-  const pool = between(t, 6.8, 8.4); drawPool(g, 1260, 160, pool, appear(t, 6.7, 7.3));
-  drawLatencyBreakdown(g, 1260, 330, appear(t, 7.8, 8.6));
-  const bp = appear(t, 9.2, 9.8, back); E.title(g, 'BOTTLENECK', 1260, 615, { size: 48, color: PAL.red, alpha: bp }); E.label(g, 'THE REPEATED PATH SATURATES THE SOURCE', 1265, 650, { size: 15, color: PAL.red, family: 'mono', tracking: 1.4, alpha: bp });
-  E.label(g, 'CONNECTIONS · IOPS / DISK READS · CPU PRESSURE', 72, 865, { size: 14, color: PAL.dim, family: 'mono', tracking: 1.4 });
+  const s = SCENES[1]; base(g); header(g, s, 2); titleBlock(g, 'The same question, repeated', '50,000 × GET /PROFILE  ·  ONE SOURCE OF TRUTH');
+  E.title(g, '≈ 4 ms', 72, 405, { size: 124, color: PAL.red }); E.label(g, 'DATABASE-BACKED PATH', 82, 442, { size: 15, color: PAL.red, tracking: 1.4 }); E.label(g, 'REPEATED WORK BECOMES THE BOTTLENECK', 82, 480, { size: 14, color: PAL.dim, family: 'mono', tracking: 1 });
+  const appX = 650, dbX = 1070, diskX = 1460, p = appear(t, 5.9, 6.8, back); E.drawCube(g, appX, 535, .92, { name: 'API', sub: ':5000', accent: PAL.violet, alpha: p }); E.drawCube(g, dbX, 470, 1.02, { name: 'DATABASE', sub: 'READ PROFILE', accent: PAL.red, alpha: p }); E.drawDisk(g, diskX, 570, .88, { alpha: p, read: between(t, 8.0, 10.1) });
+  const a = [[appX + 100, 500], [790, 395], [930, 405], [dbX - 95, 450]], b = [[dbX + 95, 445], [1210, 370], [1350, 425], [diskX - 120, 555]]; route(g, a, PAL.violet, 4, p); route(g, b, PAL.red, 4, p); const q1 = between(t, 6.8, 8.15), q2 = between(t, 8.0, 9.5); dotRoute(g, a, q1, PAL.violet, p, 'REQ', t); dotRoute(g, b, q2, PAL.red, p, 'READ', t);
+  drawDots(g, t, 22, 7.15, 1.25, [800, 500], [dbX - 125, 450], PAL.red, 5, between(t, 7.0, 10.0)); E.panel(g, 1260, 180, 430, 122, { fill: PAL.white, stroke: PAL.red, r: 12, shadow: .10, alpha: appear(t, 7.0, 7.6) }); E.label(g, 'CONNECTION POOL', 1290, 214, { size: 13, color: PAL.dim, tracking: 1.4 }); for (let i = 0; i < 8; i++) E.panel(g, 1290 + i * 39, 240, 28, 34, { fill: i < 7 ? PAL.redSoft : PAL.paper2, stroke: i < 7 ? PAL.red : PAL.line, r: 6, shadow: 0, alpha: 1 }); E.label(g, '7 / 8 BUSY', 1648, 263, { size: 12, color: PAL.red, family: 'mono', weight: 700, align: 'right', tracking: .8 });
+  drawRequestRuler(g, t, 1); stationLabel(g, 570, 650, 'APPLICATION', 'receives the request', PAL.violet, p); stationLabel(g, 980, 600, 'DATABASE', 'same read, again', PAL.red, p); stationLabel(g, 1390, 680, 'DISK / IOPS', 'physical read', PAL.dim, p);
 }
 
-function missPath(g, t) {
-  const s = SCENES[2]; base(g, { lift: .86, cool: .68, grid: .72 }); header(g, s, 3);
-  E.label(g, 'THE COMMON PATH CHANGES HERE', 72, 160, { size: 15, color: PAL.violet, family: 'mono', tracking: 1.8 });
-  const ay = 530, appX = 250, cacheX = 685, dbX = 1180, diskX = 1655;
-  const lookup = [[appX + 118, ay], [appX + 250, ay - 140], [cacheX - 160, ay - 120], [cacheX - 92, ay - 36]];
-  const miss = [[cacheX + 96, ay - 28], [cacheX + 220, ay - 170], [dbX - 230, ay - 160], [dbX - 102, ay - 40]];
-  const read = [[dbX + 102, ay - 36], [dbX + 210, ay - 130], [diskX - 220, ay - 120], [diskX - 120, ay + 12]];
-  const backDb = [[diskX - 112, ay + 32], [diskX - 280, ay + 160], [dbX + 228, ay + 146], [dbX + 96, ay + 55]];
-  const populate = [[dbX - 96, ay + 60], [dbX - 250, ay + 225], [cacheX + 220, ay + 210], [cacheX + 94, ay + 53]];
-  drawPath(g, lookup, PAL.violet, 5, .72); drawPath(g, miss, PAL.red, 5, .70); drawPath(g, read, PAL.red, 4, .58, [10, 9]); drawPath(g, backDb, PAL.cyan, 4, .45, [10, 9]); drawPath(g, populate, PAL.violet, 5, .65);
-  const q1 = between(t, 12.15, 13.22), q2 = between(t, 13.0, 14.18), q3 = between(t, 14.0, 15.15), q4 = between(t, 15.0, 16.05), q5 = between(t, 15.65, 17.2);
-  routeDot(g, lookup, q1, PAL.violet); routePacket(g, lookup, q1, 'LOOKUP', PAL.violet, t);
-  routeDot(g, miss, q2, PAL.red); routePacket(g, miss, q2, 'MISS', PAL.red, t + 1);
-  routeDot(g, read, q3, PAL.red); routePacket(g, read, q3, 'DB READ', PAL.red, t + 2);
-  routeDot(g, backDb, q4, PAL.cyan); routePacket(g, backDb, q4, 'RESULT', PAL.cyan, t + 3);
-  routeDot(g, populate, q5, PAL.violet); routePacket(g, populate, q5, 'SET', PAL.violet, t + 4);
-  E.drawApplication(g, appX, ay, .88, { busy: 0, miss: between(t, 12.8, 15.8) }); E.drawCache(g, cacheX, ay - 50, .94, { state: t < 15.7 ? 'MISS' : 'POPULATE', fill: between(t, 15.65, 17.35), ttl: null }); E.drawDatabase(g, dbX, ay - 62, .98, { state: 'READ PROFILE', row: between(t, 14.1, 16.2), miss: 1 }); E.drawDisk(g, diskX, ay + 12, .88, { read: between(t, 14.0, 15.7) });
-  E.panel(g, 80, 735, 740, 108, { fill: 'rgba(10,14,23,.84)', stroke: rgbaForState(t), r: 18, shadow: .30, alpha: appear(t, 12.2, 12.8) });
-  E.label(g, 'CACHE LOOKUP', 110, 772, { size: 14, color: PAL.dim, tracking: 1.8 }); E.label(g, 'MISS  →  DATABASE  →  STORE  →  RESPOND', 110, 815, { size: 21, color: PAL.red, family: 'mono', weight: 700, tracking: 1.1 });
-}
-function rgbaForState(t) { return E.rgba(t > 15.65 ? PAL.violet : PAL.red, .48); }
-
-function hitPath(g, t) {
-  const s = SCENES[3]; base(g, { lift: 1.04, cool: .82, grid: .84 }); header(g, s, 4);
-  const appX = 220, cacheX = 650, dbX = 1015, diskX = 1320, y = 585;
-  const fast = [[appX + 120, y - 8], [appX + 250, y - 155], [cacheX - 155, y - 155], [cacheX - 96, y - 55]];
-  const slow = [[cacheX + 98, y - 35], [cacheX + 230, y - 190], [dbX - 170, y - 175], [dbX - 104, y - 55]];
-  drawPath(g, slow, PAL.red, 4, .18, [11, 10]); drawPath(g, fast, PAL.green, 7, .78, null);
-  const q = between(t, 19.0, 20.55); routeDot(g, fast, q, PAL.green); routePacket(g, fast, q, 'HIT', PAL.green, t);
-  E.drawApplication(g, appX, y, .88, { hit: between(t, 18.7, 19.9) }); E.drawCache(g, cacheX, y - 50, 1.02, { state: 'HIT', fill: 1, hit: 1 }); E.drawDatabase(g, dbX, y - 62, .88, { state: 'ASLEEP', row: 0, hot: 0, alpha: .46 }); E.drawDisk(g, diskX, y + 12, .78, { alpha: .30, read: 0 });
-  E.drawProfileWindow(g, 90, 238, .72, { alpha: appear(t, 18.35, 19.1), response: 'hit' });
-  const nP = appear(t, 19.55, 20.45, back); E.drawNumber(g, '1.1 ms', 1435, 292, { size: 126, color: PAL.green, alpha: nP, accent: PAL.green }); E.label(g, 'HOT DATA / MEMORY PATH', 1440, 330, { size: 15, color: PAL.green, family: 'mono', tracking: 1.7, alpha: nP });
-  E.panel(g, 1400, 398, 420, 126, { fill: 'rgba(12,17,27,.80)', stroke: 'rgba(238,241,247,.13)', r: 18, shadow: .30, alpha: nP * .86 }); E.label(g, 'DATABASE PATH / DIMMED, NOT GONE', 1428, 432, { size: 13, color: PAL.dim, family: 'mono', tracking: 1, alpha: nP }); E.label(g, '≈ 4 ms', 1428, 488, { size: 43, color: PAL.dim, family: 'mono', weight: 700, tracking: 1, alpha: nP });
-  const fastP = appear(t, 20.85, 21.65, back); drawFastBreakdown(g, 1400, 590, fastP);
-  E.pill(g, 88, 768, 472, 44, 'SAME REQUEST · DIFFERENT COMMON PATH', { color: PAL.violet, stroke: E.rgba(PAL.violet, .55), fill: E.rgba(PAL.violet, .10), size: 14, mono: true, alpha: appear(t, 21.2, 21.9) });
-  E.drawLightSweep(g, between(t, 22.8, 23.45), PAL.green, .18);
+function miss(g, t) {
+  const s = SCENES[2]; base(g); header(g, s, 3); titleBlock(g, 'Put a cache in front', 'LOOKUP FIRST  ·  MISS FALLS THROUGH');
+  const apiX = 390, cacheX = 820, dbX = 1260, diskX = 1580, p = appear(t, 11.7, 12.5, back); E.drawCube(g, apiX, 500, .88, { name: 'API', sub: 'APPLICATION', accent: PAL.violet, alpha: p }); E.drawCube(g, cacheX, 465, .98, { name: 'CACHE', sub: t < 15.1 ? 'EMPTY' : 'PROFILE', accent: PAL.violet, fill: PAL.violetSoft, alpha: p }); E.drawCube(g, dbX, 440, .92, { name: 'DATABASE', sub: 'SOURCE', accent: PAL.blue, alpha: p }); E.drawDisk(g, diskX, 600, .72, { alpha: p, read: between(t, 13.7, 15.0) });
+  const lookup = [[apiX + 92, 466], [520, 370], [680, 390], [cacheX - 95, 438]], down = [[cacheX + 100, 428], [960, 320], [1120, 340], [dbX - 95, 415]], read = [[dbX + 88, 430], [1400, 400], [1490, 510], [diskX - 100, 580]], backRoute = [[diskX - 95, 596], [1430, 720], [1070, 685], [dbX + 84, 455]], save = [[dbX - 90, 450], [1120, 760], [950, 700], [cacheX + 92, 468]];
+  route(g, lookup, PAL.violet, 4, p); route(g, down, PAL.red, 4, p, [10, 9]); route(g, read, PAL.red, 3, p, [10, 9]); route(g, backRoute, PAL.blue, 3, p, [10, 9]); route(g, save, PAL.violet, 4, p);
+  const q1 = between(t, 12.2, 13.25), q2 = between(t, 13.0, 14.0), q3 = between(t, 13.8, 14.9), q4 = between(t, 14.7, 15.7), q5 = between(t, 15.3, 16.5); dotRoute(g, lookup, q1, PAL.violet, p, 'LOOKUP', t); dotRoute(g, down, q2, PAL.red, p, 'MISS', t); dotRoute(g, read, q3, PAL.red, p, 'READ', t); dotRoute(g, backRoute, q4, PAL.blue, p, 'RESULT', t); dotRoute(g, save, q5, PAL.violet, p, 'SAVE', t);
+  drawStageNote(g, 72, 720, 'MISS', PAL.red, appear(t, 12.8, 13.4)); E.label(g, '→ READ DATABASE', 350, 748, { size: 14, color: PAL.red, family: 'mono', tracking: 1, alpha: appear(t, 13.1, 13.8) }); E.label(g, '→ SAVE PROFILE IN MEMORY', 740, 748, { size: 14, color: PAL.violet, family: 'mono', tracking: 1, alpha: appear(t, 15.2, 16.0) }); E.panel(g, 1190, 760, 470, 80, { fill: PAL.violetSoft, stroke: PAL.violet, r: 12, shadow: 0, alpha: appear(t, 15.25, 16.0) }); E.label(g, 'CACHE KEY  /profile/celebrity', 1425, 807, { size: 14, color: PAL.violet, family: 'mono', align: 'center', tracking: .8, alpha: 1 });
 }
 
-function teardownLayer(g, t, i, x, y, sep, alpha = 1) {
-  const e = sep * (i - 1.5); const yy = y + e * 38; const c = i === 1 ? PAL.cyan : i === 2 ? PAL.violet : i === 3 ? PAL.amber : PAL.disk;
-  if (i === 0) E.drawApplication(g, x, yy, .76, { alpha });
-  if (i === 1) E.drawCache(g, x, yy, .82, { alpha, state: 'HOT', fill: .92, ttl: 60 });
-  if (i === 2) E.drawDatabase(g, x, yy, .82, { alpha, state: 'ROWS', row: .75 });
-  if (i === 3) E.drawDisk(g, x, yy, .72, { alpha, read: 0 });
-  const anchors = [[x + 95, yy - 38], [x + 105, yy - 38], [x + 84, yy + 12], [x + 94, yy + 12]];
-  if (alpha > 0) { E.line(g, [anchors[i], [1160, yy - 38]], { color: c, width: 2, alpha: .32 + .50 * sep }); E.movingDot(g, [1160, yy - 38], { color: c, r: 4, alpha: .60 + .4 * sep }); }
+function hit(g, t) {
+  const s = SCENES[3]; base(g); header(g, s, 4); titleBlock(g, 'The next request is a hit', 'SAME KEY  ·  SHORTER COMMON PATH');
+  E.title(g, '1.1 ms', 72, 390, { size: 132, color: PAL.green }); E.label(g, 'MEMORY PATH', 84, 430, { size: 15, color: PAL.green, tracking: 1.5 }); E.label(g, '≈ 4 ms  /  DATABASE PATH', 84, 520, { size: 30, color: PAL.dim, family: 'mono', tracking: 1 });
+  const apiX = 650, cacheX = 1010, dbX = 1430, p = appear(t, 18.0, 18.7, back); E.drawCube(g, apiX, 555, .90, { name: 'API', sub: 'APPLICATION', accent: PAL.violet, alpha: p }); E.drawCube(g, cacheX, 500, 1.02, { name: 'CACHE', sub: 'HIT', accent: PAL.green, fill: PAL.greenSoft, alpha: p }); E.drawCube(g, dbX, 450, .86, { name: 'DATABASE', sub: 'STILL THERE', accent: PAL.dim, ghost: true, alpha: p });
+  const fast = [[apiX + 95, 520], [760, 380], [900, 400], [cacheX - 100, 472]], slow = [[cacheX + 100, 470], [1160, 350], [1300, 360], [dbX - 90, 425]]; route(g, fast, PAL.green, 6, p); route(g, slow, PAL.dim, 3, p, [10, 10]); const q = between(t, 18.8, 20.2); dotRoute(g, fast, q, PAL.green, p, 'HIT', t); E.drawPacket(g, 1150, 680, 'DB PATH DIMMED', { color: PAL.dim, alpha: appear(t, 20.0, 20.8), scale: 1.05 }); E.panel(g, 1360, 690, 330, 86, { fill: PAL.greenSoft, stroke: PAL.green, r: 12, shadow: 0, alpha: appear(t, 20.5, 21.2) }); E.label(g, 'SAME PROFILE', 1525, 725, { size: 14, color: PAL.green, family: 'mono', weight: 700, align: 'center', tracking: 1.1 }); E.label(g, 'FROM MEMORY', 1525, 750, { size: 13, color: PAL.green, family: 'mono', align: 'center', tracking: 1 });
 }
+
 function teardown(g, t) {
-  const s = SCENES[4]; base(g, { lift: .92, cool: .66, grid: .72 }); header(g, s, 5);
-  const sep = appear(t, 25.55, 27.0, back); const collapse = 1 - between(t, 28.25, 29.05);
-  E.label(g, 'EXPLODED PATH / THE TRADE-OFF', 72, 160, { size: 15, color: PAL.violet, family: 'mono', tracking: 1.8 });
-  E.isoShadow(g, 600, 915, 420, 42, .35);
-  // bottom-to-top is drawn in the same order as the physical route, while labels remain anchored.
-  teardownLayer(g, t, 0, 620, 330, sep * collapse, 1); teardownLayer(g, t, 1, 620, 470, sep * collapse, 1); teardownLayer(g, t, 2, 620, 625, sep * collapse, 1); teardownLayer(g, t, 3, 620, 790, sep * collapse, 1);
-  E.label(g, 'APPLICATION', 1200, 310 + (0 - 1.5) * sep * 38, { size: 16, color: PAL.cyan, family: 'mono', weight: 700, tracking: 1.2 }); E.label(g, 'REQUEST / RESPONSE', 1200, 334 + (0 - 1.5) * sep * 38, { size: 13, color: PAL.dim, family: 'mono', tracking: 1 });
-  E.label(g, 'CACHE · IN-MEMORY', 1200, 462 + (1 - 1.5) * sep * 38, { size: 16, color: PAL.violet, family: 'mono', weight: 700, tracking: 1.2 }); E.label(g, 'TTL = 60 s (EXAMPLE)', 1200, 486 + (1 - 1.5) * sep * 38, { size: 13, color: PAL.amber, family: 'mono', tracking: 1 });
-  E.label(g, 'DATABASE', 1200, 628 + (2 - 1.5) * sep * 38, { size: 16, color: PAL.amber, family: 'mono', weight: 700, tracking: 1.2 }); E.label(g, 'SOURCE OF THE READ', 1200, 652 + (2 - 1.5) * sep * 38, { size: 13, color: PAL.dim, family: 'mono', tracking: 1 });
-  E.label(g, 'DISK / IOPS', 1200, 792 + (3 - 1.5) * sep * 38, { size: 16, color: PAL.disk, family: 'mono', weight: 700, tracking: 1.2 }); E.label(g, 'PHYSICAL READ', 1200, 816 + (3 - 1.5) * sep * 38, { size: 13, color: PAL.dim, family: 'mono', tracking: 1 });
-  const rightP = appear(t, 26.0, 26.85, back); E.panel(g, 1420, 174, 420, 596, { fill: 'rgba(10,14,23,.82)', stroke: 'rgba(238,241,247,.14)', r: 24, shadow: .42, accent: PAL.violet, alpha: rightP });
-  E.label(g, 'WHAT THE CACHE BUYS', 1460, 222, { size: 14, color: PAL.dim, tracking: 1.8, alpha: rightP }); E.title(g, 'LESS', 1460, 302, { size: 67, color: PAL.green, alpha: rightP }); E.title(g, 'REPEATED', 1460, 360, { size: 46, color: PAL.white, alpha: rightP }); E.title(g, 'WORK', 1460, 414, { size: 46, color: PAL.white, alpha: rightP });
-  const clockP = between(t, 26.85, 28.45); g.save(); g.globalAlpha = rightP; g.strokeStyle = E.rgba(PAL.amber, .26); g.lineWidth = 12; g.beginPath(); g.arc(1515, 510, 66, 0, TAU); g.stroke(); g.strokeStyle = PAL.amber; g.lineWidth = 12; g.beginPath(); g.arc(1515, 510, 66, -.5, -.5 + TAU * (1 - clockP)); g.stroke(); g.restore(); E.label(g, 'TTL', 1515, 505, { size: 15, color: PAL.amber, family: 'mono', align: 'center', tracking: 1, alpha: rightP }); E.label(g, '60 s', 1515, 532, { size: 24, color: PAL.amber, family: 'mono', weight: 700, align: 'center', tracking: 1, alpha: rightP });
-  E.label(g, clockP > .88 ? 'EXPIRED → MISS' : 'EXPIRES TO A LATER MISS', 1610, 502, { size: 15, color: clockP > .88 ? PAL.red : PAL.dim, family: 'mono', weight: 700, tracking: 1, alpha: rightP });
-  const scopeP = appear(t, 28.1, 28.8); E.panel(g, 1420, 802, 420, 116, { fill: 'rgba(255,88,100,.07)', stroke: 'rgba(255,88,100,.45)', r: 16, shadow: .25, alpha: scopeP }); E.label(g, 'SCOPE NOTE', 1446, 838, { size: 13, color: PAL.red, family: 'mono', weight: 700, tracking: 1.3, alpha: scopeP }); E.label(g, 'STAMPEDES STILL NEED DESIGN', 1446, 875, { size: 15, color: PAL.white, family: 'mono', tracking: 1.05, alpha: scopeP }); E.label(g, 'CACHE IS A PATH, NOT MAGIC', 1446, 899, { size: 13, color: PAL.dim, family: 'mono', tracking: 1, alpha: scopeP });
-  const loopP = between(t, 28.8, 29.8); E.bezier(g, [1050, 610], [1270, 680], [1270, 920], [1035, 882], { color: PAL.red, width: 3, alpha: loopP, dash: [10, 10], glowWidth: 5 }); if (loopP > .1) E.drawPacket(g, 1130, 748 + loopP * 30, 'MISS AGAIN', { color: PAL.red, scale: .82, pulse: t, alpha: loopP });
-  E.drawLightSweep(g, between(t, 29.15, 29.95), PAL.green, .18);
+  const s = SCENES[4]; base(g); header(g, s, 5); titleBlock(g, 'A cache is a shortcut', 'NOT THE SOURCE OF TRUTH  ·  TTL SETS A BOUNDARY');
+  const sep = appear(t, 24.0, 25.5, back); const layers = [{ y: 305, name: 'APP', sub: 'REQUEST', c: PAL.violet }, { y: 450, name: 'CACHE', sub: 'IN MEMORY', c: PAL.green }, { y: 595, name: 'DATABASE', sub: 'SOURCE', c: PAL.blue }, { y: 740, name: 'DISK', sub: 'PHYSICAL READ', c: PAL.dim }];
+  layers.forEach((l, i) => { const yy = l.y + (i - 1.5) * sep * 30; E.drawCube(g, 750, yy, .78, { name: l.name, sub: l.sub, accent: l.c, ghost: i === 3, alpha: 1 }); E.line(g, [[850, yy - 30], [1050, yy - 30]], { color: l.c, width: 2, alpha: .70 }); E.label(g, l.name, 1080, yy - 32, { size: 15, color: l.c, family: 'mono', weight: 700, tracking: 1.1 }); E.label(g, l.sub, 1080, yy - 10, { size: 12, color: PAL.dim, family: 'mono', tracking: .7 }); });
+  E.title(g, 'LESS', 72, 690, { size: 82, color: PAL.green }); E.title(g, 'REPEATED WORK', 72, 770, { size: 55, color: PAL.ink }); E.label(g, 'THE CACHE TAKES THE COMMON PATH', 78, 812, { size: 14, color: PAL.green, family: 'mono', tracking: 1.3 });
+  const clockP = between(t, 25.25, 27.4); E.drawClock(g, 1510, 390, 72, 1 - clockP, { color: PAL.amber, alpha: appear(t, 24.7, 25.4) }); E.label(g, 'TTL EXPIRES OLD ANSWERS', 1510, 510, { size: 14, color: PAL.amber, family: 'mono', align: 'center', tracking: 1 }); const loop = between(t, 27.1, 28.6); E.arrow(g, [1450, 560], [1340, 560], { color: PAL.red, width: 3, alpha: loop }); E.label(g, 'EXPIRED → MISS AGAIN', 1510, 567, { size: 13, color: PAL.red, family: 'mono', align: 'center', tracking: .9, alpha: loop }); E.panel(g, 1270, 650, 520, 110, { fill: PAL.redSoft, stroke: PAL.red, r: 12, shadow: 0, alpha: appear(t, 27.8, 28.6) }); E.label(g, 'SCOPE NOTE', 1300, 686, { size: 12, color: PAL.red, family: 'mono', weight: 700, tracking: 1.2 }); E.label(g, 'STALE DATA / STAMPEDE', 1300, 722, { size: 15, color: PAL.ink, family: 'mono', tracking: .9 }); E.label(g, 'STILL NEED CAREFUL DESIGN', 1300, 746, { size: 13, color: PAL.dim, family: 'mono', tracking: .9 });
+  E.label(g, 'THE DATABASE STILL MATTERS', 72, 900, { size: 15, color: PAL.dim, family: 'mono', tracking: 1.5 });
 }
 
-function transition(g, t, scene) {
-  const local = Math.min(Math.abs(t - scene.t0), Math.abs(scene.t1 - t)); if (local < .22) E.drawLightSweep(g, clamp((.22 - local) / .22), scene.id === 'teardown' ? PAL.green : PAL.violet, .08);
-}
-function drawCaptions(g, t) {
-  const active = captionAt(t); const c = active.length ? active[active.length - 1] : null; if (!c) return;
-  const a = E.captionTransition(c.t0, c.t1, t); const accent = t < 11.8 ? PAL.red : t < 19.1 ? PAL.violet : t < 25.5 ? PAL.green : PAL.amber; E.caption(g, c.text, { alpha: a, accent });
-}
+function transition(g, t, s) { const d = Math.min(Math.abs(t - s.t0), Math.abs(s.t1 - t)); if (d < .18) E.lightSweep(g, clamp((.18 - d) / .18), PAL.violet, .06); }
+function drawCaptions(g, t) { const active = captionAt(t); const c = active.length ? active[active.length - 1] : null; if (!c) return; const i = SCENES.findIndex(s => t >= s.t0 && t < s.t1); const accent = [PAL.red, PAL.red, PAL.violet, PAL.green, PAL.amber][Math.max(0, i)]; E.caption(g, c.text, { alpha: E.captionTransition(c.t0, c.t1, t), accent }); }
 
-export function renderFilm(g, t, o = {}) {
-  E.clear(g); t = clamp(t, 0, DUR - 1 / 240); const s = sceneAt(t);
-  if (s.id === 'hook') hook(g, t); else if (s.id === 'bottleneck') bottleneck(g, t); else if (s.id === 'miss') missPath(g, t); else if (s.id === 'hit') hitPath(g, t); else teardown(g, t);
-  transition(g, t, s); if (!o.nosub) drawCaptions(g, t); E.vignette(g, .47);
-}
-
+export function renderFilm(g, t, o = {}) { E.clear(g); t = clamp(t, 0, DUR - 1 / 240); const s = sceneAt(t); if (s.id === 'hook') opening(g, t); else if (s.id === 'bottleneck') bottleneck(g, t); else if (s.id === 'miss') miss(g, t); else if (s.id === 'hit') hit(g, t); else teardown(g, t); transition(g, t, s); if (!o.nosub) drawCaptions(g, t); }
 export function textsAt(t) {
-  const s = sceneAt(t), out = []; const add = (id, textValue, x0, y0, x1, y1, pass = false) => out.push({ id, text: textValue, x0, y0, x1, y1, pass });
-  if (s.id === 'hook' && t >= 1.50) add('traffic-count', '50,000', 1200, 150, 1790, 315);
-  if (s.id === 'bottleneck' && t >= 9.25) add('bottleneck', 'BOTTLENECK', 1245, 565, 1580, 635);
-  if (s.id === 'miss' && t >= 12.75) add('miss-route', 'MISS → DATABASE → STORE → RESPOND', 100, 755, 790, 835);
-  if (s.id === 'hit' && t >= 20.5) add('fast-latency', '1.1 ms', 1390, 165, 1790, 315);
-  if (s.id === 'teardown' && t >= 25.9) add('ttl', 'TTL 60 s', 1430, 450, 1645, 550);
-  if (s.id === 'teardown' && t >= 27.3) add('less-work', 'LESS REPEATED WORK', 1440, 245, 1810, 385);
+  const s = sceneAt(t), out = []; const add = (id, text, x0, y0, x1, y1, pass = false) => out.push({ id, text, x0, y0, x1, y1, pass });
+  if (s.id === 'hook' && t >= 2.7) add('traffic', '50,000', 1190, 105, 1750, 220);
+  if (s.id === 'bottleneck' && t >= 6.0) add('slow-path', '≈ 4 ms', 65, 290, 650, 430);
+  if (s.id === 'miss' && t >= 12.8) add('miss', 'MISS → READ DATABASE → SAVE', 60, 700, 1060, 780);
+  if (s.id === 'hit' && t >= 19.6) add('hit', '1.1 ms', 60, 275, 680, 405);
+  if (s.id === 'teardown' && t >= 27.1) add('less-work', 'LESS REPEATED WORK', 65, 610, 660, 790);
   return out;
 }

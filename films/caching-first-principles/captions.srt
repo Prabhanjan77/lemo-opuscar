@@ -1,19 +1,19 @@
 1
-00:00:00,200 --> 00:00:05,820
-One person clicks once: one request. Now fifty thousand people click the same profile.
+00:00:00,180 --> 00:00:05,420
+One click creates one request. The app asks the database for a profile.
 
 2
-00:00:06,080 --> 00:00:11,320
-All those requests reach the database. Connections and disk reads pile up.
+00:00:05,720 --> 00:00:11,300
+Fifty thousand people ask for the same profile. Repeated work makes the database the bottleneck.
 
 3
-00:00:11,580 --> 00:00:17,620
-The cache checks first. A miss reads the database, stores the profile, and responds.
+00:00:11,620 --> 00:00:17,500
+Add a cache. The first lookup misses, reads the database, and saves the answer.
 
 4
-00:00:17,880 --> 00:00:23,300
-A hit returns the profile from memory in about one point one milliseconds, not four.
+00:00:17,820 --> 00:00:23,380
+Next time, the lookup hits. Memory returns it in about one point one milliseconds, not four.
 
 5
-00:00:23,580 --> 00:00:29,740
-TTL limits staleness. The database still matters. Stampedes need design.
+00:00:23,720 --> 00:00:29,800
+TTL expires old answers. Caching removes repeated work; the database still matters.

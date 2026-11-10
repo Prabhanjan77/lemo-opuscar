@@ -56,8 +56,10 @@ OUT="$HERE/out"; REVIEW="$OUT/review"; mkdir -p "$REVIEW"
 node core/render/events.mjs "$HERE" --out "$HERE/events.json" --size 1920x1080
 node core/render/readcheck.mjs "$HERE" --size 1920x1080
 node core/render/video.mjs "$HERE" --fps 24 --workers 2 --size 1920x1080 --out "$OUT/caching-first-principles-raw.mp4"
-node core/render/still.mjs "$HERE" 0 2.3 4.2 7.8 12.25 15.35 19.8 25.0 29.6 --size 1920x1080 --out "$REVIEW" --prefix frame_
+# Review frames are a clean set for the current cut; remove stale frames from earlier revisions.
+rm -f "$REVIEW"/frame_*.jpg "$REVIEW/contact-sheet.jpg"
+node core/render/still.mjs "$HERE" 0 1.3 3.4 7.8 12.6 15.8 19.8 25.8 29.6 --size 1920x1080 --out "$REVIEW" --prefix frame_
 "$PY" core/render/sheet.py "$REVIEW/contact-sheet.jpg" "$REVIEW"/frame_*.jpg --cols 4 --w 480
 sh core/render/mux.sh "$OUT/caching-first-principles-raw.mp4" "$HERE/mix.wav" "$HERE/caching-first-principles.mp4" 24 0
-cp "$REVIEW/frame_20.8.jpg" "$HERE/poster.jpg"
+cp "$REVIEW/frame_19.8.jpg" "$HERE/poster.jpg"
 echo "Built $HERE/caching-first-principles.mp4"

@@ -68,7 +68,7 @@ def thump(gain=.14): return add_short(tone(68, .22, gain, "sub"), tone(185, .12,
 def chime(gain=.10): return add_short(tone(523.25, .38, gain, "bell"), tone(783.99, .28, gain * .48, "bell"))
 
 voice = np.zeros(N, dtype=np.float32)
-starts = [0.0, 6.0, 11.5, 17.8, 23.5]
+starts = [0.0, 5.6, 11.5, 17.7, 23.6]
 voice_meta = []
 for i, start in enumerate(starts, 1):
     processed = PROCESSED_DIR / f"scene0{i}.wav"
@@ -85,13 +85,13 @@ bpm = 96.0; beat = 60.0 / bpm; notes = [220.0, 261.63, 293.66, 329.63, 392.0, 32
 for k in range(int(DUR / beat) + 1):
     at = k * beat; f = notes[k % len(notes)]; gain = .020 if at < 19 else .030
     add(music, tone(f, .18 if at < 25 else .28, gain, "bell"), at)
-for at in np.arange(6.0, 11.5, beat / 2): add(music, tone(94, .075, .018, "sub"), float(at))
+for at in np.arange(5.6, 11.5, beat / 2): add(music, tone(94, .075, .018, "sub"), float(at))
 
 foley = np.zeros(N, dtype=np.float32)
-for at in (1.62, 2.72, 2.88, 3.04, 3.20, 3.36, 3.52, 6.0, 12.25): add(foley, click(.12), at)
-for at in (2.28, 5.72, 6.0, 11.5, 17.8, 23.5, 29.55): add(foley, whoosh(.075), at)
-for at in (7.0, 7.8, 8.6, 13.55, 14.45): add(foley, thump(.12), at)
-for at in (9.55, 12.25, 19.0, 25.0, 27.4, 28.1): add(foley, click(.085), at)
+for at in (0.95, 1.30, 2.72, 2.92, 3.12, 3.32, 3.52, 12.25): add(foley, click(.12), at)
+for at in (2.45, 5.6, 11.5, 17.7, 23.6, 29.45): add(foley, whoosh(.075), at)
+for at in (7.0, 8.0, 13.4, 14.6): add(foley, thump(.12), at)
+for at in (9.35, 12.25, 18.9, 25.0, 27.4, 28.1): add(foley, click(.085), at)
 add(foley, chime(.13), 15.35); add(foley, chime(.16), 19.8); add(foley, chime(.14), 29.45)
 
 mix = voice + music * .64 + foley * .78

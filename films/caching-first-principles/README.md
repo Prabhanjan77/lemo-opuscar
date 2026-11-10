@@ -1,6 +1,8 @@
-# Caching from First Principles — 30-second architect's sample
+# Caching from First Principles — minimalist architecture sample
 
-A slower 16:9 Canvas system-design explainer based on the article [Caching from First Principles](https://prabhanjan2.substack.com/p/caching-from-first-principles).
+A 30-second 16:9 Canvas system-design explainer based on [Caching from First Principles](https://prabhanjan2.substack.com/p/caching-from-first-principles).
+
+The current cut uses an editorial isometric language: pale paper stage, oversized headlines, API / database / disk / cache blocks, a measured latency ruler, and one architectural state change per scene.
 
 ## Preview
 
@@ -10,7 +12,7 @@ From the repository root:
 python3 preview_server.py
 ```
 
-Open `/films/caching-first-principles/index.html?preview=1` and use the Play button or scrubber. The revised cut makes one user / one click / one request explicit, then adds a staggered multi-user swarm whose requests all converge on the same profile target.
+Open `/films/caching-first-principles/index.html?preview=1` and use the Play button or scrubber.
 
 ## Build / render
 
@@ -18,18 +20,16 @@ Open `/films/caching-first-principles/index.html?preview=1` and use the Play but
 sh films/caching-first-principles/build.sh
 ```
 
-The build exports the timeline to `events.json` and `captions.srt`, keeps the selected narration at its natural pace, mixes voice with procedural music and click / route / database foley, runs `readcheck`, renders 24 fps frames at `1920x1080`, creates review stills and a contact sheet, and muxes `caching-first-principles.mp4` at approximately −14 LUFS.
+The build exports `events.json` and `captions.srt`, keeps the selected narration at a natural pace, mixes procedural click / route / database sounds, runs `readcheck`, renders 24 fps frames at `1920x1080`, clears and recreates the current review still set and storyboard contact board, and muxes `caching-first-principles.mp4` at approximately −14 LUFS.
 
 ## Editable source
 
-- `index.html`, `main.js` — 16:9 preview page contract.
-- `engine.js` — Canvas components: profile UI, user cards, click indicators, packets, application/cache/database/disk stations, labels, captions, and measured diagrams.
-- `film.js` — the five revised scenes and transitions.
-- `timeline.js` — the slower scene timing, narration windows, captions, and architecture cue events.
-- `mix_audio.py` — natural-speed voice placement plus procedural score and foley; the staggered user clicks are explicit cues.
-- `build.sh` — reproducible source, render, review, and mux entry point.
-- `STORYBOARD.md`, `storyboard.svg`, `TREATMENT.md`, `FACTS.md` — plan and technical review record.
+- `engine.js` — pale editorial Canvas engine, typography, isometric blocks, browser slab, route packets, ruler, TTL clock, and captions.
+- `film.js` — five readable scenes: one request, repeated database work, miss, hit, and trade-off.
+- `timeline.js` — timing, narration windows, captions, and architecture cue events.
+- `mix_audio.py` — voice placement plus procedural sound design.
+- `STORYBOARD.md`, `storyboard.svg`, `storyboard.png`, `FACTS.md` — treatment and technical review record.
 
 ## Story scope
 
-The sample covers one click → many clients → database bottleneck → cache miss / population → cache hit → TTL and stampede scope. It intentionally does not claim that a cache removes every consistency, invalidation, or external-system problem. Expand the full article only after this revised sample is reviewed.
+The sample explains the simplest useful mental model: a cache is a fast shortcut for repeated reads. It does not replace the database, guarantee freshness, or remove stampede and invalidation design work. Full article expansion remains deferred until this sample is accepted.
