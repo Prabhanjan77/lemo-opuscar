@@ -10,7 +10,7 @@ PY=${PYTHON:-$LIB/.venv/bin/python}
 cd "$LIB"
 # Prefer a user-local FFmpeg installed in the project venv (for example via imageio-ffmpeg)
 # while still allowing a system FFmpeg to win when one is already configured.
-export PATH="$LIB/.venv/bin:$PATH"
+export PATH="$HERE/bin:$LIB/.venv/bin:$PATH"
 
 # This step is always useful: it exports the single timeline to cues and captions.
 node "$HERE/export.mjs"
@@ -22,6 +22,24 @@ find_browser() {
   for c in google-chrome chromium chromium-browser chrome; do command -v "$c" 2>/dev/null && return 0; done
   return 1
 }
+
+# Optional npm fallback: @sparticuz/chromium carries a headless binary plus the
+# Amazon Linux support libraries that this sandbox lacks. It is not required when
+# a system Chrome or PLAYWRIGHT_CHROME is already available.
+prepare_npm_browser() {
+  find_browser >/dev/null 2>&1 && return 0
+  PACK="$LIB/node_modules/@sparticuz/chromium/bin"
+  [ -f "$PACK/chromium.br" ] || return 1
+  if [ -f "$PACK/al2023.tar.br" ]; then
+    ALDIR=$(node --input-type=module -e "import { inflate } from '@sparticuz/chromium'; console.log(await inflate('$PACK/al2023.tar.br'))") || return 1
+    export LD_LIBRARY_PATH="$ALDIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  fi
+  CHROME=$(node --input-type=module -e "import chromium from '@sparticuz/chromium'; console.log(await chromium.executablePath('$PACK'))") || return 1
+  [ -x "$CHROME" ] || return 1
+  export PLAYWRIGHT_CHROME="$CHROME"
+}
+
+prepare_npm_browser || true
 
 if ! command -v ffmpeg >/dev/null 2>&1; then
   echo "Preview/source ready. FFmpeg is not installed, so MP4 export was skipped." >&2

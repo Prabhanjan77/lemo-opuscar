@@ -154,7 +154,8 @@ export function renderFilm(g, t, o = {}) {
 export function textsAt(t) {
   const scene = sceneAt(t); const out = [];
   const add = (id, text, x0, y0, x1, y1, pass = false) => out.push({ id, text, x0, y0, x1, y1, pass });
-  const c = captionAt(t); if (c.length) add(`caption-${c[c.length - 1].id}`, c[c.length - 1].text, 100, t >= 53 ? 1660 : 1660, 980, 1845);
+  // Captions are intentionally omitted from TEXTS: the Lemo-Opuscar readcheck
+  // validates subtitle timing from captions.srt, not from the scene-text boxes.
   if (scene.id === 'hook' && t >= 5.35) add('double-charge', 'DOUBLE CHARGE?', 250, 1450, 830, 1540);
   if (scene.id === 'problem' && t >= 14.45) add('twice-processed', 'TWICE PROCESSED', 250, 1520, 830, 1600);
   if (scene.id === 'solution' && t >= 27.6) add('processing', 'PROCESSING', 390, 1490, 690, 1580);

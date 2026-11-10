@@ -20,7 +20,9 @@ sh films/payment-idempotency/build.sh
 
 The build always regenerates `events.json`, `captions.srt`, and `mix.wav`. It prefers a user-local FFmpeg exposed in `.venv/bin` and otherwise uses the system `ffmpeg`. If Chrome/Chromium and FFmpeg 7+ are available, it renders 24 fps frames at `1080x1920`, takes review stills, runs `readcheck`, and muxes `payment-idempotency.mp4` at approximately −14 LUFS. If either tool is missing, it leaves the editable HTML preview and reports the missing step rather than writing a false MP4.
 
-If FFmpeg is not installed system-wide, a Python environment can provide a compatible local binary with `pip install imageio-ffmpeg` followed by a symlink or wrapper at `.venv/bin/ffmpeg`; `build.sh` already searches that directory.
+If FFmpeg is not installed system-wide, a Python environment can provide a compatible local binary with `pip install imageio-ffmpeg` followed by a symlink or wrapper at `.venv/bin/ffmpeg`; `build.sh` searches the project's `bin/` shim and then `.venv/bin`. The included `bin/ffprobe` shim supplies the duration/audio queries required by `core/render/mux.sh` because the imageio wheel ships `ffmpeg` but not `ffprobe`.
+
+If Chrome is not installed system-wide, install the optional npm fallback with `npm install --no-save @sparticuz/chromium`. `build.sh` detects it, extracts the bundled support libraries, and sets `PLAYWRIGHT_CHROME` and `LD_LIBRARY_PATH` automatically.
 
 ## Editable source
 
