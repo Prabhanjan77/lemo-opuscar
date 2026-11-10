@@ -1,0 +1,19 @@
+Payment Idempotency — 60-second engineering explainer
+
+Picture
+- All phone, server, database, request packets, status cards, typography layouts, routes and transitions are drawn procedurally in Canvas 2D (`engine.js` and `film.js`). No stock footage, photographs, logos or generated images are used.
+- Visual grammar follows the repository's `dark-keynote` and `iso-infographic` style prompts; their demo stories, props and source code were not reused.
+
+Typography
+- Preview uses the viewer/system Inter-like sans and JetBrains-Mono-like monospace fallback stack.
+- DejaVu Sans / DejaVu Sans Mono may be used by the storyboard/poster helper on Linux; DejaVu is distributed under its Bitstream Vera / Arev-compatible open font licence. The final Canvas page has CSS/system fallbacks and does not download fonts at render time.
+
+Voice
+- English narration synthesized with Arena speech synthesis, selected as a masculine English narration voice for this session. The six WAV clips in `narration/` are project-generated assets.
+
+Music and sound
+- Score and foley are original procedural synthesis in `mix_audio.py` using NumPy / SciPy / SoundFile. No third-party samples or stock music are used.
+
+Software
+- Lemo-Opuscar shared render contract and tools: this repository, MIT licence.
+- `playwright-core` (Apache-2.0) and `three` (MIT) are repository dependencies; this film's picture path uses Canvas 2D and does not require Three.js.

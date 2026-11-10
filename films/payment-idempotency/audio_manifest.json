@@ -1,0 +1,43 @@
+{
+  "sample_rate": 48000,
+  "duration": 60.0,
+  "voice": [
+    {
+      "id": "scene01",
+      "start": 0.0,
+      "duration": 9.183,
+      "file": "films/payment-idempotency/narration/scene01.wav"
+    },
+    {
+      "id": "scene02",
+      "start": 9.64,
+      "duration": 7.389,
+      "file": "films/payment-idempotency/narration/scene02.wav"
+    },
+    {
+      "id": "scene03",
+      "start": 17.52,
+      "duration": 8.802,
+      "file": "films/payment-idempotency/narration/scene03.wav"
+    },
+    {
+      "id": "scene04",
+      "start": 26.84,
+      "duration": 9.994,
+      "file": "films/payment-idempotency/narration/scene04.wav"
+    },
+    {
+      "id": "scene05",
+      "start": 37.32,
+      "duration": 8.522,
+      "file": "films/payment-idempotency/narration/scene05.wav"
+    },
+    {
+      "id": "scene06",
+      "start": 46.28,
+      "duration": 9.756,
+      "file": "films/payment-idempotency/narration/scene06.wav"
+    }
+  ],
+  "notes": "Generated procedural score and foley; no stock audio."
+}

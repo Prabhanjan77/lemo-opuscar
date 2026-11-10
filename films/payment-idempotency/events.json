@@ -1,0 +1,148 @@
+{
+  "dur": 60,
+  "fps": 24,
+  "ev": [
+    {
+      "t": 0,
+      "type": "open"
+    },
+    {
+      "t": 1.15,
+      "type": "amount_lock"
+    },
+    {
+      "t": 2.25,
+      "type": "pay_click",
+      "n": 1
+    },
+    {
+      "t": 3.1,
+      "type": "pay_click",
+      "n": 2
+    },
+    {
+      "t": 3.45,
+      "type": "request_depart",
+      "n": 1
+    },
+    {
+      "t": 3.92,
+      "type": "request_depart",
+      "n": 2
+    },
+    {
+      "t": 5.82,
+      "type": "double_charge"
+    },
+    {
+      "t": 8,
+      "type": "system_wide"
+    },
+    {
+      "t": 10.82,
+      "type": "server_arrival",
+      "n": 1
+    },
+    {
+      "t": 11.34,
+      "type": "server_arrival",
+      "n": 2
+    },
+    {
+      "t": 13.15,
+      "type": "charge_attempt",
+      "n": 1
+    },
+    {
+      "t": 14,
+      "type": "charge_attempt",
+      "n": 2
+    },
+    {
+      "t": 15.32,
+      "type": "duplicate_records"
+    },
+    {
+      "t": 17,
+      "type": "key_reveal"
+    },
+    {
+      "t": 20,
+      "type": "key_attach",
+      "n": 1
+    },
+    {
+      "t": 21,
+      "type": "key_attach",
+      "n": 2
+    },
+    {
+      "t": 24,
+      "type": "cutaway"
+    },
+    {
+      "t": 26.6,
+      "type": "atomic_reserve"
+    },
+    {
+      "t": 28,
+      "type": "processing"
+    },
+    {
+      "t": 30,
+      "type": "first_payment"
+    },
+    {
+      "t": 33.2,
+      "type": "store_result"
+    },
+    {
+      "t": 34.88,
+      "type": "completed"
+    },
+    {
+      "t": 37.84,
+      "type": "retry_route"
+    },
+    {
+      "t": 40.15,
+      "type": "two_responses"
+    },
+    {
+      "t": 43,
+      "type": "concurrency"
+    },
+    {
+      "t": 45.8,
+      "type": "simultaneous_arrival"
+    },
+    {
+      "t": 47.35,
+      "type": "unique_constraint"
+    },
+    {
+      "t": 49,
+      "type": "in_progress"
+    },
+    {
+      "t": 51.35,
+      "type": "no_fabricated_result"
+    },
+    {
+      "t": 53,
+      "type": "merge"
+    },
+    {
+      "t": 55.18,
+      "type": "success_bloom"
+    },
+    {
+      "t": 56,
+      "type": "final_title"
+    },
+    {
+      "t": 59.1,
+      "type": "scope_note"
+    }
+  ]
+}
