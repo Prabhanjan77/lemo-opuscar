@@ -1,41 +1,42 @@
-// One source of truth for the caching sample picture, captions, narration placement, and cues.
+// One source of truth for the slower architect's cut: picture, captions, narration, and cues.
 export const W = 1920;
 export const H = 1080;
 export const FPS = 24;
 export const DUR = 30;
 
 export const SCENES = [
-  { id: 'hook', t0: 0, t1: 4.3, title: 'THE SPIKE', kicker: 'ONE PROFILE · MANY REQUESTS' },
-  { id: 'bottleneck', t0: 4.3, t1: 11.8, title: 'THE BOTTLENECK', kicker: 'REPEATED READS · DATABASE PRESSURE' },
-  { id: 'miss', t0: 11.8, t1: 19.1, title: 'THE MISS PATH', kicker: 'LOOKUP FIRST · FALL THROUGH · POPULATE' },
-  { id: 'hit', t0: 19.1, t1: 25.5, title: 'THE HIT PATH', kicker: 'HOT DATA · SHORTER COMMON PATH' },
-  { id: 'teardown', t0: 25.5, t1: 30, title: 'THE TRADE-OFF', kicker: 'TTL · STALE DATA · STAMPEDE DESIGN' },
+  { id: 'hook', t0: 0, t1: 6.0, title: 'THE SPIKE', kicker: 'ONE PERSON · ONE CLICK · ONE REQUEST' },
+  { id: 'bottleneck', t0: 6.0, t1: 11.5, title: 'THE BOTTLENECK', kicker: 'MANY REQUESTS · ONE DATABASE PATH' },
+  { id: 'miss', t0: 11.5, t1: 17.8, title: 'THE MISS PATH', kicker: 'LOOKUP FIRST · FALL THROUGH · POPULATE' },
+  { id: 'hit', t0: 17.8, t1: 23.5, title: 'THE HIT PATH', kicker: 'SAME PROFILE · SHORTER COMMON PATH' },
+  { id: 'teardown', t0: 23.5, t1: 30, title: 'THE TRADE-OFF', kicker: 'TTL · STALE DATA · STAMPEDE DESIGN' },
 ];
 
-// The narration clips are rendered at 1.08x with pitch-preserving atempo in build.sh.
-// Their windows are intentionally J/L-cut by a few frames over the scene boundaries.
+// Speech is intentionally allowed to breathe across the visual scene boundaries.
+// The generated clips are kept at their natural selected-voice pace; no 1.08x squeeze.
 export const CAPTIONS = [
-  { id: 'c1', t0: 0.12, t1: 3.90, text: 'Fifty thousand people open the same celebrity profile at once.' },
-  { id: 'c2', t0: 3.98, t1: 10.82, text: 'Without a cache, every request hits the database. Connections fill, disk reads pile up, and latency grows.' },
-  { id: 'c3', t0: 10.90, t1: 17.60, text: 'The cache checks first. On a miss, read the database, store the result, then respond.' },
-  { id: 'c4', t0: 17.68, t1: 23.48, text: 'On a hit, hot data returns from memory in roughly one point one milliseconds, instead of four.' },
-  { id: 'c5', t0: 23.56, t1: 29.86, text: 'A TTL limits staleness. Caching removes repeated reads, but stampedes still need design.' },
+  { id: 'c1', t0: 0.20, t1: 5.82, text: 'One person clicks once: one request. Now fifty thousand people click the same profile.' },
+  { id: 'c2', t0: 6.08, t1: 11.32, text: 'All those requests reach the database. Connections and disk reads pile up.' },
+  { id: 'c3', t0: 11.58, t1: 17.62, text: 'The cache checks first. A miss reads the database, stores the profile, and responds.' },
+  { id: 'c4', t0: 17.88, t1: 23.30, text: 'A hit returns the profile from memory in about one point one milliseconds, not four.' },
+  { id: 'c5', t0: 23.58, t1: 29.74, text: 'TTL limits staleness. The database still matters. Stampedes need design.' },
 ];
 
 export const NARRATION = [
-  { id: 'scene01', scene: 'hook', t0: 0.0, t1: 3.96, file: 'narration/processed/scene01.wav', text: 'Fifty thousand people open the same celebrity profile at once.' },
-  { id: 'scene02', scene: 'bottleneck', t0: 3.96, t1: 10.89, file: 'narration/processed/scene02.wav', text: 'Without a cache, every request hits the database. Connections fill, disk reads pile up, and latency grows.' },
-  { id: 'scene03', scene: 'miss', t0: 10.89, t1: 17.67, file: 'narration/processed/scene03.wav', text: 'The cache checks first. On a miss, read the database, store the result, then respond.' },
-  { id: 'scene04', scene: 'hit', t0: 17.67, t1: 23.56, file: 'narration/processed/scene04.wav', text: 'On a hit, hot data returns from memory in roughly one point one milliseconds, instead of four.' },
-  { id: 'scene05', scene: 'teardown', t0: 23.56, t1: 29.86, file: 'narration/processed/scene05.wav', text: 'A TTL limits staleness. Caching removes repeated reads, but stampedes still need design.' },
+  { id: 'scene01', scene: 'hook', t0: 0.0, t1: 6.0, file: 'narration/processed/scene01.wav', text: 'One person clicks once: one request. Now fifty thousand people click the same profile.' },
+  { id: 'scene02', scene: 'bottleneck', t0: 6.0, t1: 11.5, file: 'narration/processed/scene02.wav', text: 'All those requests reach the database. Connections and disk reads pile up.' },
+  { id: 'scene03', scene: 'miss', t0: 11.5, t1: 17.8, file: 'narration/processed/scene03.wav', text: 'The cache checks first. A miss reads the database, stores the profile, and responds.' },
+  { id: 'scene04', scene: 'hit', t0: 17.8, t1: 23.5, file: 'narration/processed/scene04.wav', text: 'A hit returns the profile from memory in about one point one milliseconds, not four.' },
+  { id: 'scene05', scene: 'teardown', t0: 23.5, t1: 30.0, file: 'narration/processed/scene05.wav', text: 'TTL limits staleness. The database still matters. Stampedes need design.' },
 ];
 
 export const EVENTS = [
-  [0.0, 'open'], [0.85, 'traffic_number_lock'], [1.65, 'cursor_refresh'], [2.25, 'request_fanout'],
-  [4.3, 'camera_pullback'], [5.4, 'application_pool_fills'], [6.2, 'database_bottleneck'], [7.15, 'disk_read'], [8.5, 'latency_breakdown'],
-  [11.8, 'cache_enters_path'], [12.6, 'cache_miss'], [14.05, 'database_read'], [15.05, 'disk_return'], [16.0, 'cache_population'],
-  [19.1, 'hit_path'], [20.25, 'cache_hit'], [20.85, 'latency_reveal'], [22.0, 'fast_response'],
-  [25.5, 'teardown_open'], [26.85, 'ttl_reveal'], [28.4, 'ttl_expiry'], [29.0, 'stampede_scope'], [29.6, 'final_promise'],
+  [0.0, 'open'], [0.85, 'profile_reveal'], [1.55, 'single_user_click'], [2.05, 'single_request'],
+  [2.35, 'user_swarm_starts'], [3.1, 'multiple_clicks'], [4.2, 'all_requests_converge'],
+  [6.0, 'architecture_pullback'], [7.0, 'application_pool_fills'], [7.8, 'database_bottleneck'], [8.6, 'disk_reads'], [9.55, 'latency_breakdown'],
+  [11.5, 'cache_enters_path'], [12.25, 'cache_miss'], [13.55, 'database_read'], [14.45, 'disk_return'], [15.35, 'cache_population'],
+  [17.8, 'hit_path'], [19.0, 'cache_hit'], [19.8, 'latency_reveal'], [21.25, 'fast_response'],
+  [23.5, 'teardown_open'], [25.0, 'ttl_reveal'], [27.4, 'ttl_expiry'], [28.1, 'stampede_scope'], [29.45, 'final_promise'],
 ].map(([t, type, extra = {}]) => ({ t, type, ...extra }));
 
 export function sceneAt(t) { return SCENES.find(s => t >= s.t0 && t < s.t1) || SCENES[SCENES.length - 1]; }

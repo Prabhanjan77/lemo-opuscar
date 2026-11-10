@@ -52,36 +52,45 @@ function drawFastBreakdown(g, x, y, alpha = 1) {
   E.label(g, '≈ 1.1 ms', x + 305, y + 65, { size: 17, color: PAL.green, family: 'mono', weight: 700, align: 'right', tracking: 1, alpha });
 }
 
+function drawUserCard(g, x, y, s = 1, textValue = 'USER 01', alpha = 1, click = 0) {
+  const w = 214 * s, h = 72 * s; E.panel(g, x, y, w, h, { fill: 'rgba(12,17,28,.88)', stroke: E.rgba(PAL.white, .17), r: 16 * s, shadow: .28, alpha });
+  g.save(); g.globalAlpha *= alpha; g.fillStyle = E.rgba(PAL.violet, .34); g.beginPath(); g.arc(x + 33 * s, y + 36 * s, 18 * s, 0, TAU); g.fill(); g.fillStyle = E.rgba(PAL.cyan, .30); g.beginPath(); g.arc(x + 33 * s, y + 31 * s, 7 * s, 0, TAU); g.fill(); g.fillStyle = E.rgba(PAL.cyan, .22); g.beginPath(); g.arc(x + 33 * s, y + 48 * s, 12 * s, Math.PI, TAU); g.fill(); g.restore();
+  E.label(g, textValue, x + 63 * s, y + 32 * s, { size: 12 * s, color: PAL.white, family: 'mono', weight: 700, tracking: 1, alpha }); E.label(g, 'GET /profile', x + 63 * s, y + 51 * s, { size: 11 * s, color: PAL.dim, family: 'mono', tracking: .7, alpha });
+  if (click > 0) { g.save(); g.globalAlpha *= alpha * click; g.strokeStyle = PAL.green; g.lineWidth = 2 * s; g.beginPath(); g.arc(x + 33 * s, y + 36 * s, 28 * s * click, 0, TAU); g.stroke(); g.restore(); }
+}
+
 function hook(g, t) {
   const s = SCENES[0]; base(g, { lift: 1.08, cool: .8, grid: .92 }); header(g, s, 1);
-  const reveal = appear(t, .16, 1.28, back);
-  E.drawNoiseGlyphs(g, 76, 170, 610, 110, reveal, PAL.violet);
-  E.drawNumber(g, '50,000', 74, 304, { size: 166, color: PAL.white, scramble: 1 - reveal, accent: PAL.violet });
-  E.label(g, 'USERS · SAME CELEBRITY PROFILE · ONE SPIKE', 82, 337, { size: 16, color: PAL.violet, family: 'mono', tracking: 1.8, alpha: reveal });
-  const wp = appear(t, .52, 1.22, back), x = lerp(-430, 250, wp), y = 412;
-  E.drawProfileWindow(g, x, y, .94, { alpha: wp, refresh: t > 2.2 ? .15 + between(t, 2.2, 2.65) : 0 });
-  const cursorP = appear(t, 1.45, 2.15, back); E.drawCursor(g, lerp(490, 505, cursorP), lerp(600, 570, cursorP), .72, { alpha: cursorP, click: pulse(t, 2.25, .32) });
-  const ringP = between(t, 2.0, 4.05);
-  for (let i = 0; i < 4; i++) { const rr = 62 + i * 43 + Math.max(0, t - 2.0) * 9; g.save(); g.globalAlpha = ringP * (.50 - i * .08); g.strokeStyle = PAL.violet; g.lineWidth = 3; g.beginPath(); g.arc(720, 555, rr, -.8, .85); g.stroke(); g.restore(); }
-  const p1 = [[536, 540], [640, 490], [820, 480], [1010, 405]], p2 = [[540, 574], [660, 600], [820, 660], [1010, 690]];
-  drawPath(g, p1, PAL.violet, 5, .18 + ringP * .82); drawPath(g, p2, PAL.violet, 5, .18 + ringP * .82);
-  const q1 = between(t, 2.65, 4.08), q2 = between(t, 2.88, 4.28); routeDot(g, p1, q1, PAL.violet, ringP); routeDot(g, p2, q2, PAL.violet, ringP); routePacket(g, p1, q1, 'GET', PAL.violet, t, ringP); routePacket(g, p2, q2, 'GET', PAL.violet, t + 1, ringP);
-  E.panel(g, 1230, 248, 564, 292, { fill: 'rgba(10,14,23,.68)', stroke: 'rgba(238,241,247,.12)', r: 24, shadow: .42, accent: PAL.violet, alpha: appear(t, .9, 1.55) });
-  E.label(g, 'A HOT READ', 1270, 298, { size: 14, color: PAL.dim, tracking: 2 }); E.title(g, 'Same profile.', 1270, 365, { size: 47, color: PAL.white }); E.title(g, 'Many requests.', 1270, 420, { size: 47, color: PAL.white }); E.label(g, 'THE WORK REPEATS BEFORE THE STORY CHANGES', 1272, 478, { size: 14, color: PAL.violet, family: 'mono', tracking: 1.2 });
-  E.drawLightSweep(g, between(t, 3.72, 4.3), PAL.violet, .15);
+  const reveal = appear(t, .18, 1.45, back); E.drawNoiseGlyphs(g, 1210, 150, 560, 100, reveal, PAL.violet);
+  E.drawNumber(g, '50,000', 1210, 292, { size: 144, color: PAL.white, scramble: 1 - reveal, accent: PAL.violet });
+  E.label(g, 'PEOPLE · SAME CELEBRITY PROFILE', 1218, 326, { size: 15, color: PAL.violet, family: 'mono', tracking: 1.6, alpha: reveal });
+  const profileP = appear(t, .48, 1.35, back); const profileX = 760, profileY = 325;
+  E.drawProfileWindow(g, profileX, profileY, .86, { alpha: profileP, refresh: t > 2.0 ? .15 + between(t, 2.0, 2.5) : 0 });
+  E.label(g, 'ONE SHARED READ TARGET', profileX + 215, profileY + 330, { size: 13, color: PAL.dim, family: 'mono', align: 'center', tracking: 1.2, alpha: profileP });
+  const oneP = appear(t, .95, 1.55, back); drawUserCard(g, 96, 420, .92, 'USER 01', oneP, pulse(t, 1.62, .28));
+  const oneRoute = [[294, 455], [420, 380], [610, 390], [750, 450]]; drawPath(g, oneRoute, PAL.violet, 5, oneP); const oneQ = between(t, 1.55, 2.25); routeDot(g, oneRoute, oneQ, PAL.violet, oneP); routePacket(g, oneRoute, oneQ, 'GET', PAL.violet, t, oneP);
+  const cursorP = appear(t, 1.22, 1.62, back); E.drawCursor(g, 238, 442, .54, { alpha: cursorP, click: pulse(t, 1.62, .28) });
+  E.pill(g, 94, 520, 270, 34, 'ONE CLICK → ONE REQUEST', { color: PAL.green, stroke: E.rgba(PAL.green, .55), fill: E.rgba(PAL.green, .10), size: 12, mono: true, alpha: oneP });
+  const positions = [[88, 600], [330, 600], [88, 700], [330, 700], [88, 800], [330, 800]];
+  const swarmP = between(t, 2.35, 4.55);
+  positions.forEach((pos, i) => { const a = appear(t, 2.35 + i * .16, 2.72 + i * .16, back); drawUserCard(g, pos[0], pos[1], .76, `USER ${String(i + 2).padStart(2, '0')}`, a, pulse(t, 2.72 + i * .16, .22)); const endY = profileY + 92 + (i % 3) * 34; const route = [[pos[0] + 162, pos[1] + 27], [500, pos[1] + 35], [620, endY], [750, endY]]; drawPath(g, route, PAL.violet, 3, a * .72); const qp = between(t, 2.78 + i * .16, 4.55); routeDot(g, route, qp, PAL.violet, a); });
+  if (swarmP > .15) { E.label(g, 'GET /PROFILE × MANY CLIENTS', 430, 292, { size: 13, color: PAL.violet, family: 'mono', weight: 700, tracking: 1.1, alpha: swarmP }); const targetPulse = .5 + .5 * Math.sin(t * 12); g.save(); g.globalAlpha = swarmP; g.strokeStyle = PAL.violet; g.lineWidth = 3; g.beginPath(); g.arc(profileX + 55, profileY + 165, 62 + targetPulse * 10, 0, TAU); g.stroke(); g.restore(); }
+  E.panel(g, 1210, 408, 566, 190, { fill: 'rgba(10,14,23,.70)', stroke: 'rgba(238,241,247,.14)', r: 22, shadow: .40, accent: PAL.violet, alpha: appear(t, 2.4, 3.0) });
+  E.label(g, 'ALL REQUESTS CONVERGE', 1250, 454, { size: 14, color: PAL.dim, tracking: 1.8 }); E.title(g, 'Same profile.', 1250, 510, { size: 45, color: PAL.white }); E.label(g, 'ONE HOT READ TARGET · MANY CLIENTS', 1252, 552, { size: 14, color: PAL.violet, family: 'mono', tracking: 1.2 });
+  E.drawLightSweep(g, between(t, 5.35, 5.95), PAL.violet, .12);
 }
 
 function bottleneck(g, t) {
   const s = SCENES[1]; base(g, { lift: .78, cool: .6, grid: .62 }); header(g, s, 2); floor(g, 720, .52);
-  const cam = lerp(90, -150, eio(between(t, 4.3, 11.8)));
+  const cam = lerp(90, -150, eio(between(t, 6.0, 11.5)));
   const appX = 315 + cam, dbX = 895 + cam, diskX = 1490 + cam, sy = 538;
-  stationLine(g, [appX + 105, sy + 12], [dbX - 104, sy + 4], PAL.violet, .95, 'REQUESTS'); stationLine(g, [dbX + 104, sy + 12], [diskX - 124, sy + 2], PAL.red, between(t, 5.8, 7.4), 'READ PRESSURE');
-  E.drawApplication(g, appX, sy, .92, { busy: between(t, 5.4, 10.8) }); E.drawDatabase(g, dbX, sy - 62, 1.02, { state: between(t, 6.0, 8.8) > .4 ? 'POOL FULL' : 'READ', row: between(t, 6.5, 8.8), miss: between(t, 6.1, 9.3) }); E.drawDisk(g, diskX, sy + 12, .9, { read: between(t, 7.0, 10.7) });
-  const p = [[appX + 120, sy - 8], [appX + 280, sy - 130], [dbX - 180, sy - 160], [dbX - 106, sy - 78]]; const q = between(t, 5.25, 7.15); drawPath(g, p, PAL.violet, 5, .74); routeDot(g, p, q, PAL.violet); routePacket(g, p, q, 'REQ ×n', PAL.violet, t);
-  const p2 = [[dbX + 105, sy - 50], [dbX + 260, sy - 165], [diskX - 240, sy - 140], [diskX - 125, sy - 12]]; const q2 = between(t, 7.15, 9.35); drawPath(g, p2, PAL.red, 5, .7); routeDot(g, p2, q2, PAL.red); routePacket(g, p2, q2, 'READ', PAL.red, t + 1);
-  const pool = between(t, 5.1, 8.0); drawPool(g, 1260, 160, pool, appear(t, 5.0, 5.7));
-  drawLatencyBreakdown(g, 1260, 330, appear(t, 6.2, 7.0));
-  const bp = appear(t, 8.35, 9.05, back); E.title(g, 'DATABASE', 1260, 615, { size: 52, color: PAL.red, alpha: bp }); E.label(g, 'THE BOTTLENECK IS THE REPEATED PATH', 1265, 650, { size: 15, color: PAL.red, family: 'mono', tracking: 1.4, alpha: bp });
+  stationLine(g, [appX + 105, sy + 12], [dbX - 104, sy + 4], PAL.violet, .95, 'REQUESTS'); stationLine(g, [dbX + 104, sy + 12], [diskX - 124, sy + 2], PAL.red, between(t, 7.6, 8.8), 'READ PRESSURE');
+  E.drawApplication(g, appX, sy, .92, { busy: between(t, 7.0, 10.9) }); E.drawDatabase(g, dbX, sy - 62, 1.02, { state: between(t, 7.6, 9.6) > .4 ? 'POOL FULL' : 'READ', row: between(t, 8.0, 9.8), miss: between(t, 7.8, 10.3) }); E.drawDisk(g, diskX, sy + 12, .9, { read: between(t, 8.6, 10.9) });
+  const p = [[appX + 120, sy - 8], [appX + 280, sy - 130], [dbX - 180, sy - 160], [dbX - 106, sy - 78]]; const q = between(t, 6.9, 8.4); drawPath(g, p, PAL.violet, 5, .74); routeDot(g, p, q, PAL.violet); routePacket(g, p, q, 'REQ ×n', PAL.violet, t);
+  const p2 = [[dbX + 105, sy - 50], [dbX + 260, sy - 165], [diskX - 240, sy - 140], [diskX - 125, sy - 12]]; const q2 = between(t, 8.2, 10.0); drawPath(g, p2, PAL.red, 5, .7); routeDot(g, p2, q2, PAL.red); routePacket(g, p2, q2, 'READ', PAL.red, t + 1);
+  const pool = between(t, 6.8, 8.4); drawPool(g, 1260, 160, pool, appear(t, 6.7, 7.3));
+  drawLatencyBreakdown(g, 1260, 330, appear(t, 7.8, 8.6));
+  const bp = appear(t, 9.2, 9.8, back); E.title(g, 'BOTTLENECK', 1260, 615, { size: 48, color: PAL.red, alpha: bp }); E.label(g, 'THE REPEATED PATH SATURATES THE SOURCE', 1265, 650, { size: 15, color: PAL.red, family: 'mono', tracking: 1.4, alpha: bp });
   E.label(g, 'CONNECTIONS · IOPS / DISK READS · CPU PRESSURE', 72, 865, { size: 14, color: PAL.dim, family: 'mono', tracking: 1.4 });
 }
 
@@ -109,18 +118,18 @@ function rgbaForState(t) { return E.rgba(t > 15.65 ? PAL.violet : PAL.red, .48);
 
 function hitPath(g, t) {
   const s = SCENES[3]; base(g, { lift: 1.04, cool: .82, grid: .84 }); header(g, s, 4);
-  const appX = 240, cacheX = 765, dbX = 1210, diskX = 1615, y = 520;
-  const fast = [[appX + 120, y - 8], [appX + 260, y - 150], [cacheX - 180, y - 155], [cacheX - 98, y - 55]];
-  const slow = [[cacheX + 100, y - 35], [cacheX + 280, y - 180], [dbX - 230, y - 170], [dbX - 105, y - 55]];
+  const appX = 220, cacheX = 650, dbX = 1015, diskX = 1320, y = 585;
+  const fast = [[appX + 120, y - 8], [appX + 250, y - 155], [cacheX - 155, y - 155], [cacheX - 96, y - 55]];
+  const slow = [[cacheX + 98, y - 35], [cacheX + 230, y - 190], [dbX - 170, y - 175], [dbX - 104, y - 55]];
   drawPath(g, slow, PAL.red, 4, .18, [11, 10]); drawPath(g, fast, PAL.green, 7, .78, null);
-  const q = between(t, 19.8, 21.35); routeDot(g, fast, q, PAL.green); routePacket(g, fast, q, 'HIT', PAL.green, t);
-  E.drawApplication(g, appX, y, .88, { hit: between(t, 19.4, 20.8) }); E.drawCache(g, cacheX, y - 50, 1.02, { state: 'HIT', fill: 1, hit: 1 }); E.drawDatabase(g, dbX, y - 62, .88, { state: 'ASLEEP', row: 0, hot: 0, alpha: .46 }); E.drawDisk(g, diskX, y + 12, .78, { alpha: .30, read: 0 });
-  E.drawProfileWindow(g, 90, 238, .72, { alpha: appear(t, 19.2, 19.85), response: 'hit' });
-  const nP = appear(t, 20.0, 20.85, back); E.drawNumber(g, '1.1 ms', 1150, 292, { size: 142, color: PAL.green, alpha: nP, accent: PAL.green }); E.label(g, 'HOT DATA / MEMORY PATH', 1156, 330, { size: 15, color: PAL.green, family: 'mono', tracking: 1.7, alpha: nP });
-  E.label(g, '≈ 4 ms', 1160, 470, { size: 56, color: PAL.dim, family: 'mono', weight: 700, alpha: nP * .78 }); E.label(g, 'DATABASE PATH / DIMMED, NOT GONE', 1164, 506, { size: 14, color: PAL.dim, family: 'mono', tracking: 1.2, alpha: nP * .78 });
-  const fastP = appear(t, 21.15, 22.1, back); drawFastBreakdown(g, 1170, 620, fastP);
-  E.pill(g, 88, 768, 472, 44, 'SAME REQUEST · DIFFERENT COMMON PATH', { color: PAL.violet, stroke: E.rgba(PAL.violet, .55), fill: E.rgba(PAL.violet, .10), size: 14, mono: true, alpha: appear(t, 21.4, 22.1) });
-  E.drawLightSweep(g, between(t, 23.0, 23.7), PAL.green, .18);
+  const q = between(t, 19.0, 20.55); routeDot(g, fast, q, PAL.green); routePacket(g, fast, q, 'HIT', PAL.green, t);
+  E.drawApplication(g, appX, y, .88, { hit: between(t, 18.7, 19.9) }); E.drawCache(g, cacheX, y - 50, 1.02, { state: 'HIT', fill: 1, hit: 1 }); E.drawDatabase(g, dbX, y - 62, .88, { state: 'ASLEEP', row: 0, hot: 0, alpha: .46 }); E.drawDisk(g, diskX, y + 12, .78, { alpha: .30, read: 0 });
+  E.drawProfileWindow(g, 90, 238, .72, { alpha: appear(t, 18.35, 19.1), response: 'hit' });
+  const nP = appear(t, 19.55, 20.45, back); E.drawNumber(g, '1.1 ms', 1435, 292, { size: 126, color: PAL.green, alpha: nP, accent: PAL.green }); E.label(g, 'HOT DATA / MEMORY PATH', 1440, 330, { size: 15, color: PAL.green, family: 'mono', tracking: 1.7, alpha: nP });
+  E.panel(g, 1400, 398, 420, 126, { fill: 'rgba(12,17,27,.80)', stroke: 'rgba(238,241,247,.13)', r: 18, shadow: .30, alpha: nP * .86 }); E.label(g, 'DATABASE PATH / DIMMED, NOT GONE', 1428, 432, { size: 13, color: PAL.dim, family: 'mono', tracking: 1, alpha: nP }); E.label(g, '≈ 4 ms', 1428, 488, { size: 43, color: PAL.dim, family: 'mono', weight: 700, tracking: 1, alpha: nP });
+  const fastP = appear(t, 20.85, 21.65, back); drawFastBreakdown(g, 1400, 590, fastP);
+  E.pill(g, 88, 768, 472, 44, 'SAME REQUEST · DIFFERENT COMMON PATH', { color: PAL.violet, stroke: E.rgba(PAL.violet, .55), fill: E.rgba(PAL.violet, .10), size: 14, mono: true, alpha: appear(t, 21.2, 21.9) });
+  E.drawLightSweep(g, between(t, 22.8, 23.45), PAL.green, .18);
 }
 
 function teardownLayer(g, t, i, x, y, sep, alpha = 1) {
@@ -168,11 +177,11 @@ export function renderFilm(g, t, o = {}) {
 
 export function textsAt(t) {
   const s = sceneAt(t), out = []; const add = (id, textValue, x0, y0, x1, y1, pass = false) => out.push({ id, text: textValue, x0, y0, x1, y1, pass });
-  if (s.id === 'hook' && t >= 1.30) add('traffic-count', '50,000', 70, 170, 740, 320);
-  if (s.id === 'bottleneck' && t >= 6.15) add('bottleneck', 'DATABASE', 1245, 565, 1510, 630);
+  if (s.id === 'hook' && t >= 1.50) add('traffic-count', '50,000', 1200, 150, 1790, 315);
+  if (s.id === 'bottleneck' && t >= 9.25) add('bottleneck', 'BOTTLENECK', 1245, 565, 1580, 635);
   if (s.id === 'miss' && t >= 12.75) add('miss-route', 'MISS → DATABASE → STORE → RESPOND', 100, 755, 790, 835);
-  if (s.id === 'hit' && t >= 20.8) add('fast-latency', '1.1 ms', 1140, 165, 1550, 315);
-  if (s.id === 'teardown' && t >= 25.9) add('ttl', 'TTL 60 s', 1180, 420, 1380, 510);
+  if (s.id === 'hit' && t >= 20.5) add('fast-latency', '1.1 ms', 1390, 165, 1790, 315);
+  if (s.id === 'teardown' && t >= 25.9) add('ttl', 'TTL 60 s', 1430, 450, 1645, 550);
   if (s.id === 'teardown' && t >= 27.3) add('less-work', 'LESS REPEATED WORK', 1440, 245, 1810, 385);
   return out;
 }

@@ -1,19 +1,19 @@
 1
-00:00:00,120 --> 00:00:03,900
-Fifty thousand people open the same celebrity profile at once.
+00:00:00,200 --> 00:00:05,820
+One person clicks once: one request. Now fifty thousand people click the same profile.
 
 2
-00:00:03,980 --> 00:00:10,820
-Without a cache, every request hits the database. Connections fill, disk reads pile up, and latency grows.
+00:00:06,080 --> 00:00:11,320
+All those requests reach the database. Connections and disk reads pile up.
 
 3
-00:00:10,900 --> 00:00:17,600
-The cache checks first. On a miss, read the database, store the result, then respond.
+00:00:11,580 --> 00:00:17,620
+The cache checks first. A miss reads the database, stores the profile, and responds.
 
 4
-00:00:17,680 --> 00:00:23,480
-On a hit, hot data returns from memory in roughly one point one milliseconds, instead of four.
+00:00:17,880 --> 00:00:23,300
+A hit returns the profile from memory in about one point one milliseconds, not four.
 
 5
-00:00:23,560 --> 00:00:29,860
-A TTL limits staleness. Caching removes repeated reads, but stampedes still need design.
+00:00:23,580 --> 00:00:29,740
+TTL limits staleness. The database still matters. Stampedes need design.

@@ -2,8 +2,8 @@
 """Build a self-contained 30-second voice, score, and foley WAV.
 
 Voice clips are the selected masculine en-IN narration generated for this sample.
-The build creates narration/processed/* with a pitch-preserving 1.08x atempo pass;
-this mixer keeps the original generated files untouched and records both paths.
+The build creates narration/processed/* at the natural selected-voice pace; this mixer
+keeps the original generated files untouched and records both paths.
 """
 from pathlib import Path
 import json
@@ -68,7 +68,7 @@ def thump(gain=.14): return add_short(tone(68, .22, gain, "sub"), tone(185, .12,
 def chime(gain=.10): return add_short(tone(523.25, .38, gain, "bell"), tone(783.99, .28, gain * .48, "bell"))
 
 voice = np.zeros(N, dtype=np.float32)
-starts = [0.0, 3.96, 10.89, 17.67, 23.56]
+starts = [0.0, 6.0, 11.5, 17.8, 23.5]
 voice_meta = []
 for i, start in enumerate(starts, 1):
     processed = PROCESSED_DIR / f"scene0{i}.wav"
@@ -85,14 +85,14 @@ bpm = 96.0; beat = 60.0 / bpm; notes = [220.0, 261.63, 293.66, 329.63, 392.0, 32
 for k in range(int(DUR / beat) + 1):
     at = k * beat; f = notes[k % len(notes)]; gain = .020 if at < 19 else .030
     add(music, tone(f, .18 if at < 25 else .28, gain, "bell"), at)
-for at in np.arange(4.3, 11.8, beat / 2): add(music, tone(94, .075, .018, "sub"), float(at))
+for at in np.arange(6.0, 11.5, beat / 2): add(music, tone(94, .075, .018, "sub"), float(at))
 
 foley = np.zeros(N, dtype=np.float32)
-for at in (1.65, 2.25, 4.3, 12.0): add(foley, click(.12), at)
-for at in (2.55, 4.28, 11.8, 19.1, 25.5, 29.55): add(foley, whoosh(.075), at)
-for at in (5.4, 6.2, 7.15, 14.05, 15.05): add(foley, thump(.12), at)
-for at in (8.5, 12.6, 20.25, 26.85, 28.4): add(foley, click(.085), at)
-add(foley, chime(.13), 16.0); add(foley, chime(.16), 20.85); add(foley, chime(.14), 29.6)
+for at in (1.62, 2.72, 2.88, 3.04, 3.20, 3.36, 3.52, 6.0, 12.25): add(foley, click(.12), at)
+for at in (2.28, 5.72, 6.0, 11.5, 17.8, 23.5, 29.55): add(foley, whoosh(.075), at)
+for at in (7.0, 7.8, 8.6, 13.55, 14.45): add(foley, thump(.12), at)
+for at in (9.55, 12.25, 19.0, 25.0, 27.4, 28.1): add(foley, click(.085), at)
+add(foley, chime(.13), 15.35); add(foley, chime(.16), 19.8); add(foley, chime(.14), 29.45)
 
 mix = voice + music * .64 + foley * .78
 peak = float(np.max(np.abs(mix))) or 1.0
@@ -101,6 +101,6 @@ fade = int(.08 * SR); mix[-fade:] *= np.linspace(1, 0, fade, dtype=np.float32)
 
 out = PROJECT / "mix.wav"
 sf.write(out, mix.astype(np.float32), SR, subtype="PCM_16")
-(PROJECT / "audio_manifest.json").write_text(json.dumps({"sample_rate": SR, "duration": DUR, "voice_speed": 1.08, "voice": voice_meta, "notes": "Generated procedural score and foley; no stock audio."}, indent=2) + "\n")
+(PROJECT / "audio_manifest.json").write_text(json.dumps({"sample_rate": SR, "duration": DUR, "voice_speed": 1.0, "voice": voice_meta, "notes": "Generated procedural score and foley; no stock audio."}, indent=2) + "\n")
 print(out)
 print(json.dumps(voice_meta, indent=2))

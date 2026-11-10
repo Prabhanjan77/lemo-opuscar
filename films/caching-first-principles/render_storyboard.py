@@ -21,17 +21,21 @@ def route(d, pts, color, width=5): d.line(pts, fill=color, width=width, joint='c
 
 def draw(out):
     im = Image.new('RGB',(W,H),BG); d=ImageDraw.Draw(im,'RGBA'); text(d,(60,56),'CACHING FROM FIRST PRINCIPLES / 30 S SAMPLE / REVIEW BOARD',15,DIM,mono=True); text(d,(60,102),'Traffic spike → miss → population → hit',32,WHITE,True)
-    cells=[(60,145,'THE SPIKE','01 · 00:00—00:04.3'),(630,145,'THE BOTTLENECK','02 · 00:04.3—00:11.8'),(1200,145,'THE MISS PATH','03 · 00:11.8—00:19.1'),(60,650,'THE HIT PATH','04 · 00:19.1—00:25.5'),(630,650,'THE TRADE-OFF','05 · 00:25.5—00:30'),(1200,650,'END PROMISE','06 · FINAL FRAME')]
+    cells=[(60,145,'THE SPIKE','01 · 00:00—00:06'),(630,145,'THE BOTTLENECK','02 · 00:06—00:11.5'),(1200,145,'THE MISS PATH','03 · 00:11.5—00:17.8'),(60,650,'THE HIT PATH','04 · 00:17.8—00:23.5'),(630,650,'THE TRADE-OFF','05 · 00:23.5—00:30'),(1200,650,'END PROMISE','06 · FINAL HOLD')]
     for x,y,t,s in cells: panel(d,x,y,t,s)
-    # hook
-    text(d,(88,268),'50,000',54,VIOLET,True); text(d,(90,302),'USERS · SAME PROFILE',15,DIM,mono=True)
-    rr(d,(105,360,290,515),18,(16,24,37), (238,241,247,70),2); rr(d,(120,390,275,485),12,(5,8,14),(238,241,247,25),1); d.ellipse((167,410,215,458),fill=(*VIOLET,120)); d.rectangle((155,469,240,477),fill=(*WHITE,170)); route(d,[(320,424),(390,365),(500,424)],VIOLET); route(d,[(320,474),(400,500),(500,474)],VIOLET); pill(d,340,532,116,34,'REQUEST ×n',VIOLET)
+    # hook: one click, then a visible user swarm converging on one profile
+    text(d,(88,278),'ONE CLICK',43,VIOLET,True); text(d,(90,308),'ONE REQUEST → SAME PROFILE',14,DIM,mono=True)
+    for yy,lab in ((340,'USER 01'),(410,'USER 02'),(480,'USER 03')):
+        rr(d,(88,yy,248,yy+50),13,(13,21,34),(238,241,247,70),2); d.ellipse((108,yy+13,136,yy+41),fill=(*VIOLET,130)); text(d,(153,yy+24),lab,12,WHITE,True,True); text(d,(153,yy+41),'GET /profile',11,DIM,False,True)
+    rr(d,(350,318,520,540),18,(16,24,37),(238,241,247,70),2); rr(d,(365,355,505,498),12,(5,8,14),(238,241,247,25),1); d.ellipse((420,380,454,414),fill=(*VIOLET,150)); d.rectangle((405,436,472,444),fill=(*WHITE,170)); d.rectangle((405,455,457,462),fill=(*DIM,130))
+    route(d,[(248,365),(305,350),(350,388)],VIOLET); route(d,[(248,435),(305,420),(350,430)],VIOLET); route(d,[(248,505),(305,480),(350,470)],VIOLET); pill(d,360,555,145,34,'ALL CONVERGE',VIOLET)
+    text(d,(88,580),'50,000 PEOPLE · SAME PROFILE',14,RED,False,True)
     # bottleneck
     route(d,[(690,412),(800,450),(910,450),(1030,412)],VIOLET); d.ellipse((690,403,714,427),fill=(*VIOLET,255)); d.ellipse((901,438,925,462),fill=(*RED,255)); rr(d,(840,365,1035,520),14,(26,34,49),(238,241,247,42),2); text(d,(938,407),'DATABASE',13,WHITE,True,True,'mm'); pill(d,858,434,158,33,'POOL FULL',RED); text(d,(658,555),'APP → DB → DISK / ≈4 ms',15,DIM,mono=True)
     # miss
     rr(d,(1248,352,1370,492),14,(27,32,49),(157,131,255,170),2); text(d,(1309,382),'CACHE',13,WHITE,True,True,'mm'); pill(d,1262,420,94,34,'MISS',RED); route(d,[(1372,437),(1460,437),(1540,420)],RED); rr(d,(1515,350,1645,492),14,(25,33,47),(238,241,247,50),2); text(d,(1580,395),'DB',15,WHITE,True,True,'mm'); text(d,(1228,555),'MISS → READ → STORE → RESPOND',15,DIM,mono=True)
     # hit
-    text(d,(88,772),'1.1 ms',56,GREEN,True); text(d,(90,807),'CACHE HIT / HOT DATA',15,DIM,mono=True); route(d,[(120,920),(270,840),(490,840)],GREEN,7); pill(d,280,855,82,34,'HIT',GREEN); text(d,(90,1055),'≈4 ms database path dimmed',15,DIM,mono=True)
+    text(d,(88,820),'1.1 ms',56,GREEN,True); text(d,(90,855),'CACHE HIT / HOT DATA',15,DIM,mono=True); route(d,[(120,940),(270,870),(490,870)],GREEN,7); pill(d,280,885,82,34,'HIT',GREEN); text(d,(90,1055),'≈4 ms database path dimmed',15,DIM,mono=True)
     # teardown
     text(d,(658,790),'TTL 60 s',48,AMBER,True); text(d,(660,824),'EXPLODED PATH / NAME THE TRADE-OFF',15,DIM,mono=True)
     for_y=[870,930,990]

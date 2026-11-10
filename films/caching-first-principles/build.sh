@@ -24,7 +24,7 @@ mkdir -p "$HERE/narration/processed"
 for src in "$HERE"/narration/scene0*.wav; do
   [ -f "$src" ] || continue
   name=$(basename "$src")
-  ffmpeg -y -loglevel error -i "$src" -filter:a atempo=1.08 -ar 48000 -ac 1 "$HERE/narration/processed/$name"
+  ffmpeg -y -loglevel error -i "$src" -filter:a atempo=1.0 -ar 48000 -ac 1 "$HERE/narration/processed/$name"
 done
 if [ ! -x "$PY" ]; then PY=python3; fi
 "$PY" "$HERE/mix_audio.py"
@@ -56,7 +56,7 @@ OUT="$HERE/out"; REVIEW="$OUT/review"; mkdir -p "$REVIEW"
 node core/render/events.mjs "$HERE" --out "$HERE/events.json" --size 1920x1080
 node core/render/readcheck.mjs "$HERE" --size 1920x1080
 node core/render/video.mjs "$HERE" --fps 24 --workers 2 --size 1920x1080 --out "$OUT/caching-first-principles-raw.mp4"
-node core/render/still.mjs "$HERE" 0 4.3 8.5 12.6 16.5 20.8 25.8 29.6 --size 1920x1080 --out "$REVIEW" --prefix frame_
+node core/render/still.mjs "$HERE" 0 2.3 4.2 7.8 12.25 15.35 19.8 25.0 29.6 --size 1920x1080 --out "$REVIEW" --prefix frame_
 "$PY" core/render/sheet.py "$REVIEW/contact-sheet.jpg" "$REVIEW"/frame_*.jpg --cols 4 --w 480
 sh core/render/mux.sh "$OUT/caching-first-principles-raw.mp4" "$HERE/mix.wav" "$HERE/caching-first-principles.mp4" 24 0
 cp "$REVIEW/frame_20.8.jpg" "$HERE/poster.jpg"

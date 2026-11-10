@@ -1,8 +1,10 @@
-# Caching from First Principles — 30-second sample treatment
+# Caching from First Principles — 30-second architect's cut
 
-## Intent
+## Direction
 
-A beginner-to-intermediate explainer that makes one request path visible: a celebrity-profile spike creates repeated reads, the database path becomes the bottleneck, and a cache changes the common path from disk-backed work to an in-memory lookup. The film is a sample only; it deliberately leaves the article's deeper edge cases for a later full-length treatment.
+A slower, system-design explainer built around one causal sentence: **one person clicks once and creates one request; many people click the same profile and all those requests converge on the same read path.** The camera then follows one request through application, database, disk, cache miss, cache population, and cache hit.
+
+The cut favours clear state changes over decorative motion. Every important packet has time to land, every layer has an anchored label, and the viewer can pause the mental model at each architecture boundary.
 
 ## Approved format
 
@@ -10,28 +12,30 @@ A beginner-to-intermediate explainer that makes one request path visible: a cele
 - **Canvas:** 16:9 landscape, 1920 × 1080, 24 fps
 - **Language / voice:** English, selected masculine Indian-accented `en-IN` voice (`voice-02`)
 - **Caption treatment:** synchronized bottom-centre UI toast; captions are exported to `captions.srt`
-- **Visual medium:** deterministic Canvas 2D, original code-drawn diagrams and interface surfaces; no stock footage
-- **Accent logic:** violet = traffic / cache / active route, red = bottleneck or miss, green = hit / fast path, neutral = infrastructure
+- **Visual medium:** deterministic Canvas 2D, original code-drawn assets; no stock footage
+- **Accent logic:** violet = request route, red = pressure or miss, green = hit / resolved fast path, neutral = infrastructure
+- **Pacing rule:** one major action at a time; route packets do not compete with headline reveals; explanatory labels hold before the next state enters
 
 ## Shot plan
 
 | Time | Style grammar | What the viewer sees | Spoken idea |
 |---|---|---|---|
-| 00:00–00:04.3 | Dark Tech Keynote + Living Screencast | Giant `50,000` resolves out of glyph noise. A redrawn celebrity profile window appears; a cursor taps refresh and concentric request rings multiply. | Fifty thousand people open the same celebrity profile at once. |
-| 00:04.3–00:11.8 | Living Screencast → Desktop Flythrough | The profile window pulls back into a physical route. Camera travels over application, database, and disk stations. Connection slots fill; disk read strips pulse; `~4 ms` and `BOTTLENECK` land on the database path. | Without a cache, every request hits the database. Connections fill, disk reads pile up, and latency grows. |
-| 00:11.8–00:19.1 | Living Screencast + Desktop Flythrough | A cache station slides into the route. The key lookup is explicit. First request is a red `MISS`; route dives to database/disk, returns the profile card, and writes the result into the cache. | The cache checks first. On a miss, read the database, store the result, then respond. |
-| 00:19.1–00:25.5 | Dark Tech Keynote + Living Screencast | Same request repeats. `HIT` flips green; the route is short and bright. Giant `1.1 ms` resolves beside the earlier `4 ms`, with the database path dimmed rather than erased. | On a hit, hot data returns from memory in roughly one point one milliseconds, instead of four. |
-| 00:25.5–00:30.0 | Exploded Teardown + Dark Tech Keynote | The path separates into app, in-memory cache, database, and disk layers. Anchored labels call out `TTL 60 s`; expiry turns into a controlled miss loop. End promise reads `LESS REPEATED WORK`, followed by a small scope note about stampedes. | A TTL limits staleness. Caching removes repeated reads, but stampedes still need design. |
+| 00:00–00:06 | Dark Tech Keynote + Living Screencast | One visible user card appears. A cursor clicks once; one `GET /profile` packet reaches one celebrity profile window. Then six more user cards pop in with distinct click rings. Their request lines all converge on that same profile endpoint while `50,000` resolves in a separate keynote panel. | One person clicks once: one request. Now fifty thousand people click the same profile. |
+| 00:06–00:11.5 | Desktop Flythrough | The camera pulls back from the profile into a clear route: application → database → disk. The connection pool fills one slot at a time. A measured `≈ 4 ms` breakdown appears only after the route is readable. | All those requests reach the database. Connections and disk reads pile up. |
+| 00:11.5–00:17.8 | Living Screencast + Desktop Flythrough | The cache is inserted before the database. A single lookup enters the cache and stops at a red `MISS`; the path then falls through to database and disk, returns the profile, and writes it into the cache. | The cache checks first. A miss reads the database, stores the profile, and responds. |
+| 00:17.8–00:23.5 | Dark Tech Keynote + Living Screencast | The same profile request repeats. A green `HIT` travels only application → cache. The source database remains visible but dimmed. `1.1 ms` and a boxed `≈ 4 ms` comparison hold long enough to read. | A hit returns the profile from memory in about one point one milliseconds, not four. |
+| 00:23.5–00:30 | Exploded Teardown + Dark Tech Keynote | Application, in-memory cache, database, and disk separate vertically with anchored labels. A `TTL 60 s` clock expires into a later miss loop. The final card resolves to `LESS / REPEATED / WORK`, with a small stampede scope note. | TTL limits staleness. The database still matters. Stampedes need design. |
 
-## Technical guardrails
+## Architecture rules
 
-- The `50,000` figure is the article's illustrative celebrity-profile spike, not a universal capacity claim.
-- The film preserves the article's back-of-envelope values: app → database `0.5 ms`, disk-controller lookup `1.5 ms`, physical read `1.5 ms`, database → app `0.5 ms`, about `4 ms` total; cache path about `1.1 ms`.
-- A cache miss falls through to the database and populates the cache. A cache hit is the fast in-memory path.
-- TTL is shown as an expiry boundary, not as proof of freshness or consistency.
-- The closing scope note avoids saying that caching eliminates all stale-data, stampede, or external-system problems.
-- Redis may be shown as a small implementation hint on the cache station, not as a requirement for every cache.
+- The user cards are not decorative: each represents a client request and each request line ends at the same profile read target.
+- The profile window is the read target; the application station is the service boundary that receives the request before checking cache or database.
+- The database remains the source of the read. A cache hit dims it but never removes it.
+- The miss is a state transition: lookup → miss → database/disk → result → cache population.
+- The hit is a different route, not a second database read: lookup → hit → memory response.
+- Values remain article-specific approximations: `≈4 ms` database path and `≈1.1 ms` cache path.
+- TTL is an expiry boundary, not a freshness or consistency guarantee. Stampedes remain an explicit scope note.
 
 ## Sound / motion
 
-One shared 96 BPM procedural pulse, dry request ticks, a low disk thump, and a green cache-hit chime. The voice remains dominant and the music ducks below it. Motion follows snap-grid timing: number lock, camera travel, route packets, then a measured layer separation.
+The voice is kept at the selected natural pace rather than squeezed into a fast 1.08× delivery. A dry click belongs to the first user and a staggered set of clicks belongs to the swarm. Packets move in short, readable flights; the camera settles before each measured label appears. A low database thump and one green hit chime identify architecture states without turning the film into a montage.

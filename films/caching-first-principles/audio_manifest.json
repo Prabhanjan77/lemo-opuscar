@@ -1,40 +1,40 @@
 {
   "sample_rate": 48000,
   "duration": 30.0,
-  "voice_speed": 1.08,
+  "voice_speed": 1.0,
   "voice": [
     {
       "id": "scene01",
       "start": 0.0,
-      "duration": 3.685,
+      "duration": 6.019,
       "file": "films/caching-first-principles/narration/processed/scene01.wav",
       "source": "films/caching-first-principles/narration/scene01.wav"
     },
     {
       "id": "scene02",
-      "start": 3.96,
-      "duration": 6.515,
+      "start": 6.0,
+      "duration": 4.758,
       "file": "films/caching-first-principles/narration/processed/scene02.wav",
       "source": "films/caching-first-principles/narration/scene02.wav"
     },
     {
       "id": "scene03",
-      "start": 10.89,
-      "duration": 6.298,
+      "start": 11.5,
+      "duration": 5.699,
       "file": "films/caching-first-principles/narration/processed/scene03.wav",
       "source": "films/caching-first-principles/narration/scene03.wav"
     },
     {
       "id": "scene04",
-      "start": 17.67,
-      "duration": 5.44,
+      "start": 17.8,
+      "duration": 4.97,
       "file": "films/caching-first-principles/narration/processed/scene04.wav",
       "source": "films/caching-first-principles/narration/scene04.wav"
     },
     {
       "id": "scene05",
-      "start": 23.56,
-      "duration": 5.858,
+      "start": 23.5,
+      "duration": 5.636,
       "file": "films/caching-first-principles/narration/processed/scene05.wav",
       "source": "films/caching-first-principles/narration/scene05.wav"
     }
