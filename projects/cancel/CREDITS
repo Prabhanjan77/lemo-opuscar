@@ -1,0 +1,23 @@
+WHY YOUR API KEEPS WORKING AFTER THE USER LEAVES — credits
+
+Made from code in this folder. No stock footage, no generated video, no third-party imagery.
+
+Type
+  Inter — Rasmus Andersson, SIL Open Font License 1.1
+    https://github.com/rsms/inter  (files in fonts/, licence in fonts/OFL.txt)
+  JetBrains Mono — JetBrains, SIL Open Font License 1.1
+    https://github.com/JetBrains/JetBrainsMono  (files in fonts/, licence in fonts/OFL.txt)
+
+Voice
+  Generated with Arena's speech synthesis: English (India), masculine narrator.
+  No actor recording; the lines are in voice/.
+
+Music and sound effects
+  Written for this film in mix.py: additive synthesis (pad, pluck, bass, bell) and procedural
+  foley (clicks, ticks, whooshes, thumps, chirps). No sample libraries.
+
+Software
+  Python 3.11, numpy, scipy (BSD-3), Pillow (HPND) — isometric drawing, frame rendering, the mix.
+  imageio-ffmpeg 0.8.1 (FFmpeg build, LGPL/GPL as built) — H.264/AAC encode and loudness mastering.
+
+No brand names, products or frameworks are depicted; the API, the database and the code are generic.

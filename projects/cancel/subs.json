@@ -1,0 +1,187 @@
+[
+ {
+  "t0": 0.3,
+  "t1": 2.885,
+  "text": "Imagine you start generating a report,"
+ },
+ {
+  "t0": 2.805,
+  "t1": 5.315,
+  "text": "but close the browser before it finishes."
+ },
+ {
+  "t0": 5.235,
+  "t1": 7.825,
+  "text": "You might assume the server stops working too."
+ },
+ {
+  "t0": 7.745,
+  "t1": 9.88,
+  "text": "But often, it doesn't."
+ },
+ {
+  "t0": 12.6,
+  "t1": 14.775,
+  "text": "The client connection is gone."
+ },
+ {
+  "t0": 14.695,
+  "t1": 17.64,
+  "text": "But the application may still be executing code,"
+ },
+ {
+  "t0": 17.56,
+  "t1": 19.2,
+  "text": "holding a database connection,"
+ },
+ {
+  "t0": 19.12,
+  "t1": 22.86,
+  "text": "or running an expensive query that nobody needs anymore."
+ },
+ {
+  "t0": 27.6,
+  "t1": 29.985,
+  "text": "That's where cancellation comes in."
+ },
+ {
+  "t0": 29.905,
+  "t1": 32.91,
+  "text": "Instead of assuming work stops automatically,"
+ },
+ {
+  "t0": 32.83,
+  "t1": 35.108,
+  "text": "the application needs a way to communicate"
+ },
+ {
+  "t0": 35.028,
+  "t1": 37.86,
+  "text": "that the result is no longer required."
+ },
+ {
+  "t0": 40.0,
+  "t1": 41.795,
+  "text": "When the client disconnects,"
+ },
+ {
+  "t0": 41.715,
+  "t1": 43.72,
+  "text": "the server can detect that signal."
+ },
+ {
+  "t0": 43.64,
+  "t1": 46.3,
+  "text": "It can pass cancellation through the service layer,"
+ },
+ {
+  "t0": 46.22,
+  "t1": 48.69,
+  "text": "and into supported database operations,"
+ },
+ {
+  "t0": 48.61,
+  "t1": 51.06,
+  "text": "allowing unnecessary work to stop."
+ },
+ {
+  "t0": 53.2,
+  "t1": 55.325,
+  "text": "Cancellation is cooperative."
+ },
+ {
+  "t0": 55.245,
+  "t1": 58.115,
+  "text": "Your code checks whether the operation was cancelled,"
+ },
+ {
+  "t0": 58.035,
+  "t1": 61.575,
+  "text": "and supported asynchronous operations receive the same signal."
+ },
+ {
+  "t0": 61.495,
+  "t1": 65.34,
+  "text": "It isn't a magic switch that instantly kills every task."
+ },
+ {
+  "t0": 66.8,
+  "t1": 68.24,
+  "text": "But there's a catch."
+ },
+ {
+  "t0": 68.16,
+  "t1": 70.685,
+  "text": "If your code never checks for cancellation,"
+ },
+ {
+  "t0": 70.605,
+  "t1": 73.08,
+  "text": "or calls a library that doesn't support it,"
+ },
+ {
+  "t0": 73.0,
+  "t1": 75.015,
+  "text": "the work may continue anyway."
+ },
+ {
+  "t0": 74.935,
+  "t1": 78.62,
+  "text": "That's why cancellation must be handled deliberately."
+ },
+ {
+  "t0": 80.8,
+  "t1": 83.76,
+  "text": "A timeout is related, but different."
+ },
+ {
+  "t0": 83.68,
+  "t1": 86.78,
+  "text": "Cancellation may happen because the client leaves."
+ },
+ {
+  "t0": 86.7,
+  "t1": 89.825,
+  "text": "A timeout happens because a deadline is reached."
+ },
+ {
+  "t0": 89.745,
+  "t1": 91.135,
+  "text": "Both are useful, but neither"
+ },
+ {
+  "t0": 91.055,
+  "t1": 94.58,
+  "text": "guarantees an operation stops immediately."
+ },
+ {
+  "t0": 96.2,
+  "t1": 100.125,
+  "text": "The correct design propagates cancellation through the request,"
+ },
+ {
+  "t0": 100.045,
+  "t1": 102.09,
+  "text": "checks it during long-running work,"
+ },
+ {
+  "t0": 102.01,
+  "t1": 105.22,
+  "text": "and releases resources when operations end."
+ },
+ {
+  "t0": 107.0,
+  "t1": 109.375,
+  "text": "Remember: a disconnected client"
+ },
+ {
+  "t0": 109.295,
+  "t1": 111.86,
+  "text": "doesn't always mean cancelled work."
+ },
+ {
+  "t0": 111.78,
+  "t1": 115.82,
+  "text": "Make cancellation an explicit part of your backend design."
+ }
+]

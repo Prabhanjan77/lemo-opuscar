@@ -1,0 +1,131 @@
+1
+00:00:00,300 --> 00:00:02,785
+Imagine you start generating a report,
+
+2
+00:00:02,805 --> 00:00:05,215
+but close the browser before it finishes.
+
+3
+00:00:05,235 --> 00:00:07,725
+You might assume the server stops working too.
+
+4
+00:00:07,745 --> 00:00:09,880
+But often, it doesn't.
+
+5
+00:00:12,600 --> 00:00:14,675
+The client connection is gone.
+
+6
+00:00:14,695 --> 00:00:19,100
+But the application may still be executing code, holding a database connection,
+
+7
+00:00:19,120 --> 00:00:22,860
+or running an expensive query that nobody needs anymore.
+
+8
+00:00:27,600 --> 00:00:29,885
+That's where cancellation comes in.
+
+9
+00:00:29,905 --> 00:00:32,810
+Instead of assuming work stops automatically,
+
+10
+00:00:32,830 --> 00:00:35,008
+the application needs a way to communicate
+
+11
+00:00:35,028 --> 00:00:37,860
+that the result is no longer required.
+
+12
+00:00:40,000 --> 00:00:43,620
+When the client disconnects, the server can detect that signal.
+
+13
+00:00:43,640 --> 00:00:46,200
+It can pass cancellation through the service layer,
+
+14
+00:00:46,220 --> 00:00:48,590
+and into supported database operations,
+
+15
+00:00:48,610 --> 00:00:51,060
+allowing unnecessary work to stop.
+
+16
+00:00:53,200 --> 00:00:55,225
+Cancellation is cooperative.
+
+17
+00:00:55,245 --> 00:00:58,015
+Your code checks whether the operation was cancelled,
+
+18
+00:00:58,035 --> 00:01:01,475
+and supported asynchronous operations receive the same signal.
+
+19
+00:01:01,495 --> 00:01:05,340
+It isn't a magic switch that instantly kills every task.
+
+20
+00:01:06,800 --> 00:01:10,585
+But there's a catch. If your code never checks for cancellation,
+
+21
+00:01:10,605 --> 00:01:12,980
+or calls a library that doesn't support it,
+
+22
+00:01:13,000 --> 00:01:14,915
+the work may continue anyway.
+
+23
+00:01:14,935 --> 00:01:18,620
+That's why cancellation must be handled deliberately.
+
+24
+00:01:20,800 --> 00:01:23,660
+A timeout is related, but different.
+
+25
+00:01:23,680 --> 00:01:26,680
+Cancellation may happen because the client leaves.
+
+26
+00:01:26,700 --> 00:01:31,035
+A timeout happens because a deadline is reached. Both are useful, but neither
+
+27
+00:01:31,055 --> 00:01:34,580
+guarantees an operation stops immediately.
+
+28
+00:01:36,200 --> 00:01:40,025
+The correct design propagates cancellation through the request,
+
+29
+00:01:40,045 --> 00:01:41,990
+checks it during long-running work,
+
+30
+00:01:42,010 --> 00:01:45,220
+and releases resources when operations end.
+
+31
+00:01:47,000 --> 00:01:49,275
+Remember: a disconnected client
+
+32
+00:01:49,295 --> 00:01:51,760
+doesn't always mean cancelled work.
+
+33
+00:01:51,780 --> 00:01:55,820
+Make cancellation an explicit part of your backend design.
